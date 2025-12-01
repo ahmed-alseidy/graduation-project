@@ -1,16 +1,16 @@
-import { Body, Controller, HttpException, Post, UseGuards } from '@nestjs/common';
-import { AllowAnonymous, AuthService } from '@thallesp/nestjs-better-auth';
-import { LoginDto } from './dto/login.dto';
-import { ok, error } from '../common/response';
-import { ApiTags } from '@nestjs/swagger';
-import { RegisterDto } from './dto/register.dto';
+import { Body, Controller, HttpException, Post } from "@nestjs/common";
+import { ApiTags } from "@nestjs/swagger";
+import { AllowAnonymous, AuthService } from "@thallesp/nestjs-better-auth";
+import { error, ok } from "../common/response";
+import { LoginDto } from "./dto/login.dto";
+import { RegisterDto } from "./dto/register.dto";
 
-@ApiTags('Auth')
-@Controller('auth')
+@ApiTags("Auth")
+@Controller("auth")
 export class AuthController {
-    constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
-    @Post('login')
+  @Post('login')
     @AllowAnonymous()
     async login(@Body() body: LoginDto) {
         try {
@@ -32,8 +32,8 @@ export class AuthController {
             return error(message, e);
         }
     }
-    
-    @Post('register')
+
+  @Post('register')
     @AllowAnonymous()
     async register(@Body() body: RegisterDto) {
         try {
@@ -56,15 +56,15 @@ export class AuthController {
             return error(message, e);
         }
     }
-    
-    @Post('logout')
-    @AllowAnonymous()
-    async logout() {
-        try {
-            const resp = await this.authService.api.signOut();
-            return ok(resp);
-        } catch (e: any) {
-            return error(e);
-        }
+
+  @Post("logout")
+  @AllowAnonymous()
+  async logout() {
+    try {
+      const resp = await this.authService.api.signOut();
+      return ok(resp);
+    } catch (e: any) {
+      return error(e);
     }
+  }
 }
