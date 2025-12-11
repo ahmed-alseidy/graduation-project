@@ -7,6 +7,8 @@ async function bootstrap() {
     bodyParser: false,
   });
 
+  app.setGlobalPrefix("api");
+
   const config = new DocumentBuilder()
     .setTitle("Graduation Project API")
     .setDescription("Graduation Project API Description")
@@ -17,8 +19,10 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("/api", app, document);
 
-  app.enableCors();
-  app.setGlobalPrefix("api");
+  app.enableCors({
+    origin: process.env.FRONTEND_URL ?? "http://localhost:3000",
+    credentials: true,
+  });
 
   await app.listen(process.env.PORT ?? 5000);
 }
