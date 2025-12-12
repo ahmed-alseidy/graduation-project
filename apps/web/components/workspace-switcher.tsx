@@ -22,11 +22,11 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { attempt } from "@/lib/error-handling";
-import { listWorkspaces, WorkSpace } from "@/lib/workspace";
+import { listWorkspaces, Workspace } from "@/lib/workspace";
 
 export function WorkspaceSwitcher() {
   const { isMobile } = useSidebar();
-  const [activeWorkspace, setActiveWorkspace] = useState<WorkSpace | undefined>(
+  const [activeWorkspace, setActiveWorkspace] = useState<Workspace | undefined>(
     undefined
   );
   const { data: workspaces } = useQuery({
