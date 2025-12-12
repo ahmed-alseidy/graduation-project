@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Provider } from "jotai";
 import { Toaster } from "sonner";
+import { AuthProvider } from "@/components/auth-provider";
 import ReactQueryProvider from "@/components/react-query-provider";
 
 const geistSans = localFont({
@@ -30,7 +31,7 @@ export default function RootLayout({
         <Provider>
           <ReactQueryProvider>
             <Toaster />
-            {children}
+            <AuthProvider>{children}</AuthProvider>
           </ReactQueryProvider>
         </Provider>
       </body>
