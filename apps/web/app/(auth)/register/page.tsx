@@ -6,7 +6,7 @@ import { RegisterForm } from "./register-form";
 
 export default function SignupPage() {
   return (
-    <div className="flex w-full items-center justify-center">
+    <div className="flex min-h-screen w-full items-center justify-center">
       <div className="hidden min-h-screen w-1/2 flex-col justify-between bg-primary/5 p-12 text-primary-foreground md:flex">
         <div className="flex items-center gap-2">
           <GalleryVerticalEnd className="size-6 text-primary" />

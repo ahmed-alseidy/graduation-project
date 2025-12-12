@@ -15,7 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { registerUser } from "@/lib/auth";
+import { authClient } from "@/lib/auth-client";
 
 const schema = z.object({
   name: z.string().min(1).max(32),
@@ -38,7 +38,11 @@ export function RegisterForm() {
   });
 
   async function onSubmit(data: z.infer<typeof schema>) {
-    const res = await registerUser(data.name, data.email, data.password);
+    const res = await authClient.signUp.email({
+      name: data.name,
+      password: data.password,
+      email: data.email,
+    });
     if (res?.error) {
       form.setError("root", { message: res?.error.message });
     } else {
