@@ -1,10 +1,15 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { authClient } from "./auth-client";
 
+export type OkResponse<T = unknown> = {
+  ok: true;
+  data: T;
+};
+
 export async function authFetch<T>(
   url: string | URL,
   options?: AxiosRequestConfig
-): Promise<AxiosResponse<T>> {
+): Promise<AxiosResponse<OkResponse<T>>> {
   const config: AxiosRequestConfig = {
     ...options,
     withCredentials: true,
