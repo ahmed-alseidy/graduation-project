@@ -38,6 +38,17 @@ export class WorkspacesController {
     );
   }
 
+  @Get(":slug")
+  async findWorkspaceBySlug(
+    @Param("slug") slug: string,
+    @Session() session: UserSession
+  ) {
+    return await this.workspacesService.findWorkspaceBySlug(
+      slug,
+      session.user.id
+    );
+  }
+
   @Get(":workspaceId/members")
   async getWorkspaceMembers(
     @Param("workspaceId", ParseUUIDPipe) workspaceId: string,

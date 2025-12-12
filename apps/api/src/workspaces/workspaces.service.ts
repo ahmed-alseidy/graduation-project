@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from "@nestjs/common";
 import { and, desc, eq, or } from "drizzle-orm";
 import { ok } from "@/common/response";
@@ -61,6 +62,25 @@ export class WorkspacesService {
     }
 
     return ok({ workspaceId: workspace?.[0]?.id });
+  }
+
+  async findWorkspaceBySlug(slug: string, userId: string) {
+    const [workspace, error] = await attempt(
+      db
+        .select()
+        .from(workspaces)
+        .where(and(eq(workspaces.slug, slug), eq(workspaces.ownerId, userId)))
+        .limit(1)
+    );
+    if (error) {
+      throw new InternalServerErrorException(
+        "Failed to find workspace by slug"
+      );
+    }
+    if (!workspace?.[0]) {
+      throw new NotFoundException("Workspace not found");
+    }
+    return ok({ workspace: workspace?.[0] });
   }
 
   async getWorkspaces(ownerId: string) {
