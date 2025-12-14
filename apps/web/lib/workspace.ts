@@ -77,3 +77,13 @@ export const addMemberToWorkspace = async (
   );
   return res.data;
 };
+
+export const updateWorkspaceAccessedAt = async (slug: string) => {
+  const res = await authFetch<{ success: boolean }>(
+    `${BACKEND_URL}/workspaces/${slug}/accessed-at`,
+    {
+      method: "PUT",
+    }
+  );
+  return res.data;
+};
