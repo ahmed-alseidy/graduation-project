@@ -26,7 +26,9 @@ import { attempt } from "@/lib/error-handling";
 import { findWorkspaceBySlug, listWorkspaces } from "@/lib/workspace";
 
 export function WorkspaceSwitcher() {
+  const router = useRouter();
   const params = useParams();
+  const slug = decodeURIComponent(params.workspace as string);
   const { isMobile } = useSidebar();
   const [activeWorkspace, setActiveWorkspace] = useAtom(currentWorkspaceAtom);
   const { data: workspaces } = useQuery({
@@ -37,17 +39,20 @@ export function WorkspaceSwitcher() {
         toast.error("Error while fetching workspaces");
         return;
       }
-      setActiveWorkspace(result.data.workspaces[0]);
-      return result.data.workspaces;
+      if (result.data.workspaces.length > 0) {
+        setActiveWorkspace(result.data.workspaces[0]);
+        return result.data.workspaces;
+      }
+      router.push("/workspaces/new");
+      return [];
     },
+    enabled: !!slug,
   });
 
   const { data: _workspace } = useQuery({
-    queryKey: ["workspace", params.workspace as string],
+    queryKey: ["workspace", slug],
     queryFn: async () => {
-      const [result, error] = await attempt(
-        findWorkspaceBySlug(params.workspace as string)
-      );
+      const [result, error] = await attempt(findWorkspaceBySlug(slug));
       if (error || !result) {
         toast.error("Error while fetching workspace");
         return;
@@ -56,7 +61,6 @@ export function WorkspaceSwitcher() {
       return result?.data.workspace;
     },
   });
-  const router = useRouter();
 
   return (
     <SidebarMenu>
