@@ -3,7 +3,6 @@
 import { ArrowLeft, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { Separator } from "@/components/ui/separator";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -34,15 +33,14 @@ export function SettingsSidebar() {
   const basePath = `/${encodeURIComponent(workspace)}/settings`;
 
   return (
-    <SidebarGroup className="min-h-screen">
+    <SidebarGroup>
       <Link
-        className="mt-2 flex items-center gap-2 text-muted-foreground text-sm hover:text-foreground"
+        className="mb-4 flex items-center gap-2 p-2 text-muted-foreground text-sm hover:text-foreground"
         href={`/${encodeURIComponent(workspace)}`}
       >
-        <ArrowLeft className="mr-1 size-4" />
-        <span className="text-sm">Back to workspace</span>
+        <ArrowLeft className="size-4" />
+        <span>Back to workspace</span>
       </Link>
-      <Separator className="my-4" />
       <SidebarGroupLabel className="px-2 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
         Settings
       </SidebarGroupLabel>
