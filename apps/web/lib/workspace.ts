@@ -1,5 +1,5 @@
 import { authFetch } from "./auth-fetch";
-import { BACKEND_URL } from "./contants";
+import { BACKEND_URL } from "./constants";
 
 export type Workspace = {
   id: string;

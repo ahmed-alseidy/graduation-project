@@ -1,6 +1,6 @@
 import { nextCookies } from "better-auth/next-js";
 import { createAuthClient } from "better-auth/react";
-import { BACKEND_URL } from "./contants";
+import { BACKEND_URL } from "./constants";
 
 export const authClient: ReturnType<typeof createAuthClient> = createAuthClient(
   {
