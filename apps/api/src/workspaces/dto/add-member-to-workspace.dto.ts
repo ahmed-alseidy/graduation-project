@@ -1,21 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsArray, IsEmail, IsNotEmpty } from "class-validator";
 
 export class AddMemberToWorkspaceDto {
   @ApiProperty({
-    description: "The ID of the user to add to the workspace",
-    example: "123e4567-e89b-12d3-a456-426614174000",
+    description: "The emails of the users to add to the workspace",
+    example: ["user1@example.com", "user2@example.com"],
   })
-  @IsString()
   @IsNotEmpty()
-  userId: string;
-
-  @ApiProperty({
-    description: "The role of the user in the workspace",
-    example: "admin",
-    enum: ["admin", "developer", "viewer"],
-  })
-  @IsString()
-  @IsNotEmpty()
-  role: "admin" | "developer" | "viewer";
+  @IsArray({ each: true })
+  @IsEmail({}, { each: true })
+  emails: string[];
 }

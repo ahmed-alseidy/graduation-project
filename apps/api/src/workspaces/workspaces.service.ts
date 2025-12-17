@@ -4,7 +4,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from "@nestjs/common";
-import { and, count, desc, eq, or } from "drizzle-orm";
+import { and, count, desc, eq, inArray, or } from "drizzle-orm";
 import { ok } from "@/common/response";
 import { db } from "@/db";
 import { users, workspaceMembers, workspaces } from "@/db/schema";
@@ -114,34 +114,55 @@ export class WorkspacesService {
 
   async addMemberToWorkspace(
     workspaceId: string,
-    userId: string,
+    emails: string[],
     role: "admin" | "developer" | "viewer"
   ) {
-    const [foundMember, foundMemberError] = await attempt(
+    const [foundMembers, foundMembersError] = await attempt(
       db
         .select()
         .from(workspaceMembers)
+        .leftJoin(users, eq(workspaceMembers.userId, users.id))
         .where(
           and(
             eq(workspaceMembers.workspaceId, workspaceId),
-            eq(workspaceMembers.userId, userId)
+            inArray(users.email, emails)
           )
         )
         .limit(1)
     );
-    if (foundMemberError) {
+    if (foundMembersError) {
       throw new InternalServerErrorException(
         "Failed to check if member exists"
       );
     }
-    if (foundMember) {
+    if (foundMembers.length > 0) {
       throw new ConflictException("Member already exists");
     }
 
-    const [, error] = await attempt(
-      db.insert(workspaceMembers).values({ workspaceId, userId, role })
+    const [foundUsers, foundUsersError] = await attempt(
+      db
+        .select({ id: users.id })
+        .from(users)
+        .where(inArray(users.email, emails))
     );
-    if (error) {
+    if (foundUsersError) {
+      throw new InternalServerErrorException("Failed to find user");
+    }
+
+    if (foundUsers.length !== emails.length) {
+      throw new NotFoundException("Some users not found");
+    }
+
+    const [, addMembersError] = await attempt(
+      db.insert(workspaceMembers).values(
+        foundUsers.map((user) => ({
+          workspaceId,
+          userId: user.id,
+          role,
+        }))
+      )
+    );
+    if (addMembersError) {
       throw new InternalServerErrorException(
         "Failed to add member to workspace"
       );

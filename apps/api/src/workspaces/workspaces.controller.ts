@@ -71,8 +71,8 @@ export class WorkspacesController {
   ) {
     return await this.workspacesService.addMemberToWorkspace(
       workspaceId,
-      body.userId,
-      body.role
+      body.emails,
+      "developer"
     );
   }
 
