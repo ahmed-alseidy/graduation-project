@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
+import { useSetAtom } from "jotai";
 import { Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -24,6 +25,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { currentWorkspaceAtom } from "@/lib/atoms/current-workspace";
 import { authClient } from "@/lib/auth-client";
 import { attempt } from "@/lib/error-handling";
 import { listWorkspaces } from "@/lib/workspace";
@@ -34,6 +36,7 @@ const schema = z.object({
 });
 
 export function LoginForm() {
+  const setCurrentWorkspace = useSetAtom(currentWorkspaceAtom);
   const router = useRouter();
   const auth = authClient.useSession();
 
@@ -52,6 +55,9 @@ export function LoginForm() {
       const [result, error] = await attempt(listWorkspaces(1, 1));
       if (error || !result) {
         return { workspaces: [], total: 0 };
+      }
+      if (result.data.workspaces.length > 0) {
+        setCurrentWorkspace(result.data.workspaces[0]);
       }
       return result.data;
     },
