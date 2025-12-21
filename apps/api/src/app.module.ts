@@ -3,6 +3,7 @@ import { AuthModule } from "@thallesp/nestjs-better-auth";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { auth } from "./lib/auth";
+import { ProjectsModule } from "./projects/projects.module";
 import { WorkspacesModule } from "./workspaces/workspaces.module";
 
 @Module({
@@ -11,6 +12,7 @@ import { WorkspacesModule } from "./workspaces/workspaces.module";
     AuthModule.forRoot({
       auth,
     }),
+    ProjectsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
