@@ -54,7 +54,7 @@ const data = {
       items: [
         {
           title: "Projects",
-          url: "#",
+          url: "/workspaces/projects",
           icon: Briefcase,
         },
 

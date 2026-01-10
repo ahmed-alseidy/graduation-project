@@ -53,6 +53,9 @@ export default function MembersPage() {
     },
     enabled: !!slug && !isWorkspaceLoading,
   });
+  if (true) {
+    console.log("membersData", membersData);
+  }
 
   if (isLoading || isWorkspaceLoading) {
     return <Loading />;
