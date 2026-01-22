@@ -9,6 +9,7 @@ import { db } from "@/db";
 import { projects } from "@/db/schema/project";
 import { attempt } from "@/lib/error-handling";
 import { CreateProjectDto } from "./dto/create-project.dto";
+import { UpdateProjectDto } from "./dto/update-project.dto";
 
 @Injectable()
 export class ProjectsService {
@@ -57,5 +58,33 @@ export class ProjectsService {
     }
 
     return ok({ project: project?.[0] });
+  }
+
+  async deleteProject(projectId: string) {
+    const [project, projectError] = await attempt(
+      db.delete(projects).where(eq(projects.id, projectId))
+    );
+    if (projectError) {
+      throw new InternalServerErrorException("Failed to delete project");
+    }
+    if (!project?.[0]) {
+      throw new NotFoundException("Project not found");
+    }
+
+    return ok({ projectId: project?.[0]?.id });
+  }
+
+  async updateProject(projectId: string, body: UpdateProjectDto) {
+    const [project, projectError] = await attempt(
+      db.update(projects).set(body).where(eq(projects.id, projectId))
+    );
+    if (projectError) {
+      throw new InternalServerErrorException("Failed to update project");
+    }
+    if (!project?.[0]) {
+      throw new NotFoundException("Project not found");
+    }
+
+    return ok({ projectId: project?.[0]?.id });
   }
 }
