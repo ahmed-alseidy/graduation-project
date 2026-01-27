@@ -16,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useRouter, usePathname } from "next/navigation";
 
 type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
@@ -28,6 +29,14 @@ export function DataTable<TData, TValue>({
   data,
   onRowClick,
 }: DataTableProps<TData, TValue>) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleRowClick = (row: Row<TData>) => {
+    onRowClick ? () => onRowClick(row) : undefined;
+    router.push(`${pathname}/${(row.original as any).id}`);
+  } 
+
   const table = useReactTable({
     data,
     columns,
@@ -60,7 +69,7 @@ export function DataTable<TData, TValue>({
                 className={onRowClick ? "cursor-pointer" : ""}
                 data-state={row.getIsSelected() && "selected"}
                 key={row.id}
-                onClick={onRowClick ? () => onRowClick(row) : undefined}
+                onClick={() => handleRowClick(row)}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>

@@ -1,26 +1,72 @@
 "use client";
 
 import {
-  CalendarCheck,
-  CalendarClock,
-  Loader,
-  OctagonAlert,
-  User,
+  User
 } from "lucide-react";
-import { useState } from "react";
+import { useParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { currentWorkspaceAtom } from "@/lib/atoms/current-workspace";
+import { useAtom } from "jotai";
+import { useQuery } from "@tanstack/react-query";
+import { getProject } from "@/lib/projects";
+import { attempt } from "@/lib/error-handling";
+import { toast } from "sonner";
+import { Loading } from "@/components/loading";
+import StatusPriority from "../_components/status-priority";
+import DateSelect from "../_components/date-select";
+import * as React from "react";
 
 export default function Project() {
+  const params = useParams();
+  const projectId = params.project as string;
+  const [currentWorkspace, setCurrentWorkspace] = useAtom(currentWorkspaceAtom);
   const [projectName, setProjectName] = useState("");
   const [summary, setSummary] = useState("This is a summary of the project.");
   const [description, setDescription] = useState("");
+  const [startDate, setStartDate] = React.useState<Date>();
+  const [targetDate, setTargetDate] = React.useState<Date>();
+  const [selectedStatus, setSelectedStatus] = useState();
+  const [selectedPriority, setSelectedPriority] = useState();
+
+
+  const { data: projectData, isLoading } = useQuery({
+      queryKey: ["projects", projectId],
+      queryFn: async () => {
+        if (!projectId) {
+          return [];
+        }
+  
+        const [projectResult, projectError] = await attempt(
+          getProject(currentWorkspace.id, projectId)
+        );
+        if (projectError || !projectResult) {
+          toast.error("Error while fetching projects");
+          return [];
+        }
+        return projectResult.data.project;
+      }
+    });
+
+  useEffect(() => {
+    if (projectData) {
+      console.log(projectData);
+      setProjectName(projectData.name);
+      setDescription(projectData.description || "");
+      setSelectedStatus(projectData.status);
+      setSelectedPriority(projectData.priority);
+    }
+  }, [projectData]);
+
+  if (isLoading) {
+    return <Loading />;
+  }
 
   return (
     <>
@@ -44,38 +90,16 @@ export default function Project() {
           <div className="flex items-center gap-8">
             <h2 className="font-bold text-lg">Properties</h2>
             <ul className="flex gap-6 font-bold text-sm">
-              <li className="flex cursor-pointer items-center gap-2 px-2 py-1">
-                <Button size="sm" variant="ghost">
-                  <span>
-                    <Loader color="#ffbd08b7" size={16} />
-                  </span>
-                  <span>In Progress</span>
-                </Button>
-              </li>
-              <li className="flex cursor-pointer items-center gap-2 px-2 py-1">
-                <span>
-                  <OctagonAlert className="text-destructive" size={16} />
-                </span>
-                <span>URGENT</span>
-              </li>
-              <li className="flex cursor-pointer items-center gap-2 px-2 py-1">
+              {/* Status Priority */}
+              <StatusPriority selectedStatus={selectedStatus} setSelectedStatus={setSelectedStatus} selectedPriority={selectedPriority} setSelectedPriority={setSelectedPriority} />
+              <li className="flex cursor-pointer items-center gap-2 px-2 py-1 border rounded-md hover:bg-secondary">
                 <span>
                   <User className="text-muted-foreground" size={16} />
                 </span>
                 <span>Abdullah hisham</span>
               </li>
-              <li className="flex cursor-pointer items-center gap-2 px-2 py-1">
-                <span>
-                  <CalendarClock className="text-muted-foreground" size={16} />
-                </span>
-                <span>Des 2, 2025</span>
-              </li>
-              <li className="flex cursor-pointer items-center gap-2 px-2 py-1">
-                <span>
-                  <CalendarCheck className="text-muted-foreground" size={16} />
-                </span>
-                <span>May 30</span>
-              </li>
+              {/* Date Select */}
+              <DateSelect startDate={startDate} setStartDate={setStartDate} targetDate={targetDate} setTargetDate={setTargetDate} />
             </ul>
           </div>
         </div>

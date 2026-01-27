@@ -5,7 +5,7 @@ import { Plus } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { CreateProjectDialog } from "@/components/create-project-dialog";
+import { CreateProjectDialog } from "./_components/create-project-dialog";
 import { DataTable } from "@/components/data-table";
 import { Loading } from "@/components/loading";
 import { Button } from "@/components/ui/button";
@@ -53,6 +53,9 @@ export default function ProjectsPage() {
 
   if (isLoading || isWorkspaceLoading) {
     return <Loading />;
+  }
+  if (true) {
+    console.log(projectsData);
   }
 
   if (!workspaceData?.id) {
