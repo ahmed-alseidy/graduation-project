@@ -23,6 +23,8 @@ export class ProjectsService {
           status: body.status,
           workspaceId,
           priority: body.priority,
+          startDate: body.startDate,
+          endDate: body.endDate,
         })
         .returning({ id: projects.id })
     );

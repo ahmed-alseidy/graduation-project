@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsDate,
   Max,
   Min,
 } from "class-validator";
@@ -52,4 +53,20 @@ export class CreateProjectDto {
   @Max(4)
   @IsNotEmpty()
   priority: number;
+
+  @ApiProperty({
+    description: "The start date of the project",
+    example: "2020-01-01",
+  })
+  @IsDate()
+  @IsOptional()
+  startDate?: Date;
+
+  @ApiProperty({
+    description: "The end date of the project",
+    example: "2020-01-01",
+  })
+  @IsDate()
+  @IsOptional()
+  endDate?: Date;
 }
