@@ -16,11 +16,11 @@ const statusColors: Record<
 };
 
 const priorityLabels: Record<number, string> = {
-  0: "Low",
-  1: "Medium",
-  2: "High",
-  3: "Urgent",
-  4: "Critical",
+  0: "No priority",
+  1: "Low",
+  2: "Medium",
+  3: "High",
+  4: "Urgent",
 };
 
 const priorityColors: Record<
