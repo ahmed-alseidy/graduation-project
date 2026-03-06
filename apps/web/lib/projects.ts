@@ -97,16 +97,16 @@ export const deleteProject = async (workspaceId: string, projectId: string) => {
 };
 
 export type ProjectTask = {
-  id: string,
-  name: string,
-  description?: string | null,
-  projectId: string,
-  assigneeId?: string,
-  status: ProjectStatus,
-  dueDate?: Date,
-  priority: number,
-  createdAt: Date
-}
+  id: string;
+  name: string;
+  description?: string | null;
+  projectId: string;
+  assigneeId?: string;
+  status: ProjectStatus;
+  dueDate?: Date;
+  priority: number;
+  createdAt: Date;
+};
 
 export type CreateProjectTaskData = {
   name: string;
@@ -123,7 +123,7 @@ export const createProjectTask = async (
   projectId: string,
   data: CreateProjectTaskData
 ) => {
-  const res = await authFetch<{ projectId: string }>(
+  const res = await authFetch<{ taskId: string }>(
     `${BACKEND_URL}/workspaces/${workspaceId}/projects/${projectId}/tasks`,
     {
       method: "POST",
@@ -133,8 +133,11 @@ export const createProjectTask = async (
   return res.data;
 };
 
-export const getProjectTask = async (workspaceId: string, projectId: string) => {
-  const res = await authFetch<{ projectTask: ProjectTask }>(
+export const getProjectTasks = async (
+  workspaceId: string,
+  projectId: string
+) => {
+  const res = await authFetch<{ tasks: ProjectTask[] }>(
     `${BACKEND_URL}/workspaces/${workspaceId}/projects/${projectId}/tasks`,
     {
       method: "GET",

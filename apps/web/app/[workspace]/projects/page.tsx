@@ -1,26 +1,231 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
-import { useParams } from "next/navigation";
+import {
+  ArrowRight,
+  CalendarDays,
+  CheckCircle2,
+  Circle,
+  CircleDashed,
+  CircleOff,
+  Clock,
+  FolderOpen,
+  Plus,
+} from "lucide-react";
+import Link from "next/link";
+import { useParams, usePathname } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { CreateProjectDialog } from "./_components/create-project-dialog";
-import { DataTable } from "@/components/data-table";
 import { Loading } from "@/components/loading";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { attempt } from "@/lib/error-handling";
-import { listProjects } from "@/lib/projects";
+import { listProjects, type Project } from "@/lib/projects";
 import { findWorkspaceBySlug } from "@/lib/workspace";
-import { columns } from "./columns";
-import { projectsDateAtom } from "@/lib/atoms/projects-date";
-import { useAtom } from "jotai";
+import { CreateProjectDialog } from "./_components/create-project-dialog";
+
+const STATUS_CONFIG = {
+  backlog: {
+    label: "Backlog",
+    icon: CircleDashed,
+    className: "border-border text-muted-foreground",
+    dotClass: "bg-muted-foreground",
+  },
+  planned: {
+    label: "Planned",
+    icon: Circle,
+    className:
+      "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400",
+    dotClass: "bg-blue-500",
+  },
+  in_progress: {
+    label: "In Progress",
+    icon: Clock,
+    className:
+      "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400",
+    dotClass: "bg-amber-500",
+  },
+  completed: {
+    label: "Completed",
+    icon: CheckCircle2,
+    className:
+      "border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400",
+    dotClass: "bg-green-500",
+  },
+  cancelled: {
+    label: "Cancelled",
+    icon: CircleOff,
+    className: "border-destructive/30 bg-destructive/10 text-destructive",
+    dotClass: "bg-destructive",
+  },
+} as const;
+
+const PRIORITY_CONFIG: Record<number, { label: string; className: string }> = {
+  0: { label: "No Priority", className: "border-border text-muted-foreground" },
+  1: {
+    label: "Low",
+    className: "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-400",
+  },
+  2: {
+    label: "Medium",
+    className:
+      "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400",
+  },
+  3: {
+    label: "High",
+    className:
+      "border-orange-500/30 bg-orange-500/10 text-orange-700 dark:text-orange-400",
+  },
+  4: {
+    label: "Urgent",
+    className: "border-destructive/30 bg-destructive/10 text-destructive",
+  },
+};
+
+const STATUS_FILTERS = [
+  "all",
+  "backlog",
+  "planned",
+  "in_progress",
+  "completed",
+  "cancelled",
+] as const;
+type StatusFilter = (typeof STATUS_FILTERS)[number];
+
+function StatCard({
+  label,
+  count,
+  icon: Icon,
+  active,
+  onClick,
+}: {
+  label: string;
+  count: number;
+  icon: React.ElementType;
+  active?: boolean;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      className={`group flex flex-col gap-3 border p-4 text-left transition-colors hover:bg-accent ${active ? "border-primary bg-accent" : "border-border bg-card"}`}
+      onClick={onClick}
+      type="button"
+    >
+      <div className="flex items-center justify-between">
+        <span className="text-muted-foreground text-xs uppercase tracking-wider">
+          {label}
+        </span>
+        <Icon
+          className={`size-4 ${active ? "text-primary" : "text-muted-foreground"}`}
+        />
+      </div>
+      <span
+        className={`font-semibold text-2xl tabular-nums ${active ? "text-primary" : ""}`}
+      >
+        {count}
+      </span>
+    </button>
+  );
+}
+
+function ProjectCard({ project, href }: { project: Project; href: string }) {
+  const status = STATUS_CONFIG[project.status];
+  const priority = PRIORITY_CONFIG[project.priority] ?? PRIORITY_CONFIG[0];
+  const StatusIcon = status.icon;
+
+  const formatDate = (d: Date | null | undefined) =>
+    d
+      ? new Date(d).toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : null;
+
+  const start = formatDate(project.startDate);
+  const end = formatDate(project.endDate);
+
+  return (
+    <Link href={`${href}/${project.id}/overview`}>
+      <Card className="flex h-full cursor-pointer flex-col transition-colors hover:bg-accent/40">
+        <CardHeader className="pb-0">
+          <div className="flex items-start justify-between gap-2">
+            <CardTitle className="line-clamp-1 font-semibold text-sm">
+              {project.name}
+            </CardTitle>
+            <ArrowRight className="mt-0.5 size-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/card:opacity-100" />
+          </div>
+          {project.description ? (
+            <p className="mt-1 line-clamp-2 text-muted-foreground text-xs">
+              {project.description}
+            </p>
+          ) : null}
+        </CardHeader>
+
+        <CardContent className="flex flex-1 flex-col justify-end gap-3 pt-4">
+          <div className="flex flex-wrap gap-1.5">
+            <span
+              className={`inline-flex items-center gap-1 border px-2 py-0.5 text-xs ${status.className}`}
+            >
+              <StatusIcon className="size-3" />
+              {status.label}
+            </span>
+            {project.priority > 0 ? (
+              <span
+                className={`inline-flex items-center border px-2 py-0.5 text-xs ${priority?.className ?? ""}`}
+              >
+                {priority?.label}
+              </span>
+            ) : null}
+          </div>
+        </CardContent>
+
+        {start !== null || end !== null ? (
+          <CardFooter className="flex items-center gap-1.5 text-muted-foreground text-xs">
+            <CalendarDays className="size-3 shrink-0" />
+            {start !== null ? <span>{start}</span> : null}
+            {start !== null && end !== null ? <span>→</span> : null}
+            {end !== null ? <span>{end}</span> : null}
+          </CardFooter>
+        ) : null}
+      </Card>
+    </Link>
+  );
+}
+
+function EmptyState({ onNew }: { onNew: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-4 border border-dashed py-20 text-center">
+      <div className="flex size-12 items-center justify-center border bg-muted">
+        <FolderOpen className="size-5 text-muted-foreground" />
+      </div>
+      <div>
+        <p className="font-medium text-sm">No projects yet</p>
+        <p className="mt-1 text-muted-foreground text-xs">
+          Create your first project to start tracking work.
+        </p>
+      </div>
+      <Button onClick={onNew} size="sm" variant="outline">
+        <Plus className="size-3.5" />
+        New Project
+      </Button>
+    </div>
+  );
+}
 
 export default function ProjectsPage() {
   const params = useParams();
+  const pathname = usePathname();
   const slug = decodeURIComponent(params.workspace as string);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [lol, setProjectsDate] = useAtom(projectsDateAtom);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
   const { data: workspaceData, isLoading: isWorkspaceLoading } = useQuery({
     queryKey: ["workspace", slug],
@@ -28,64 +233,156 @@ export default function ProjectsPage() {
       const [result, error] = await attempt(findWorkspaceBySlug(slug));
       if (error || !result) {
         toast.error("Error while fetching workspace");
-        return null;
+        throw new Error("Failed to fetch workspace");
       }
-      return result?.data.workspace;
+      return result.data.workspace;
     },
-    enabled: !!slug,
   });
 
-  const { data: projectsData, isLoading } = useQuery({
+  const { data: projectsData, isLoading: isProjectsLoading } = useQuery({
     queryKey: ["projects", workspaceData?.id],
     queryFn: async () => {
-      if (!workspaceData?.id) {
-        return [];
-      }
-
       const [projectsResult, projectsError] = await attempt(
-        listProjects(workspaceData.id)
+        listProjects(workspaceData?.id ?? "")
       );
       if (projectsError || !projectsResult) {
         toast.error("Error while fetching projects");
-        return [];
+        throw new Error("Failed to fetch projects");
       }
       return projectsResult.data.projects;
     },
-    enabled: !!slug && !isWorkspaceLoading && !!workspaceData?.id,
+    enabled: !!workspaceData?.id,
   });
 
-  if (isLoading || isWorkspaceLoading) {
+  if (isProjectsLoading || isWorkspaceLoading) {
     return <Loading />;
   }
-  if (true) {
-    setProjectsDate(projectsData ?? []);
-    // console.log(lol);
-  }
 
-  if (!workspaceData?.id) {
+  if (!workspaceData) {
     return null;
   }
 
+  const projects = projectsData ?? [];
+
+  const counts = {
+    all: projects.length,
+    backlog: projects.filter((p) => p.status === "backlog").length,
+    planned: projects.filter((p) => p.status === "planned").length,
+    in_progress: projects.filter((p) => p.status === "in_progress").length,
+    completed: projects.filter((p) => p.status === "completed").length,
+    cancelled: projects.filter((p) => p.status === "cancelled").length,
+  };
+
+  const filtered =
+    statusFilter === "all"
+      ? projects
+      : projects.filter((p) => p.status === statusFilter);
+
   return (
     <div className="flex min-h-[calc(100vh-10rem)] flex-col gap-6 p-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-start justify-between">
         <div>
           <h1 className="font-semibold text-2xl">Projects</h1>
-          <p className="text-muted-foreground text-sm">
-            Manage and track your workspace projects
+          <p className="mt-0.5 text-muted-foreground text-sm">
+            {projects.length === 0
+              ? "No projects in this workspace yet"
+              : `${projects.length} project${projects.length !== 1 ? "s" : ""} in this workspace`}
           </p>
         </div>
         <Button onClick={() => setDialogOpen(true)}>
-          <Plus size={16} />
+          <Plus className="size-4" />
           New Project
         </Button>
       </div>
-      <DataTable columns={columns} data={projectsData ?? []} />
+
+      {/* Stat cards */}
+      {projects.length > 0 && (
+        <>
+          <div className="grid grid-cols-2 gap-px bg-border sm:grid-cols-3 lg:grid-cols-6">
+            <StatCard
+              active={statusFilter === "all"}
+              count={counts.all}
+              icon={FolderOpen}
+              label="All"
+              onClick={() => setStatusFilter("all")}
+            />
+            <StatCard
+              active={statusFilter === "backlog"}
+              count={counts.backlog}
+              icon={CircleDashed}
+              label="Backlog"
+              onClick={() => setStatusFilter("backlog")}
+            />
+            <StatCard
+              active={statusFilter === "planned"}
+              count={counts.planned}
+              icon={Circle}
+              label="Planned"
+              onClick={() => setStatusFilter("planned")}
+            />
+            <StatCard
+              active={statusFilter === "in_progress"}
+              count={counts.in_progress}
+              icon={Clock}
+              label="In Progress"
+              onClick={() => setStatusFilter("in_progress")}
+            />
+            <StatCard
+              active={statusFilter === "completed"}
+              count={counts.completed}
+              icon={CheckCircle2}
+              label="Completed"
+              onClick={() => setStatusFilter("completed")}
+            />
+            <StatCard
+              active={statusFilter === "cancelled"}
+              count={counts.cancelled}
+              icon={CircleOff}
+              label="Cancelled"
+              onClick={() => setStatusFilter("cancelled")}
+            />
+          </div>
+
+          <Separator />
+        </>
+      )}
+
+      {/* Active filter label */}
+      {statusFilter !== "all" && (
+        <div className="flex items-center gap-2">
+          <span className="text-muted-foreground text-sm">
+            Showing{" "}
+            <span className="font-medium text-foreground">
+              {STATUS_CONFIG[statusFilter as keyof typeof STATUS_CONFIG]?.label}
+            </span>{" "}
+            projects
+          </span>
+          <button
+            className="text-muted-foreground text-xs underline underline-offset-2 hover:text-foreground"
+            onClick={() => setStatusFilter("all")}
+            type="button"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
+      {/* Grid or empty */}
+      {filtered.length === 0 ? (
+        <EmptyState onNew={() => setDialogOpen(true)} />
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((project) => (
+            <ProjectCard href={pathname} key={project.id} project={project} />
+          ))}
+        </div>
+      )}
+
       <CreateProjectDialog
         onOpenChange={setDialogOpen}
         open={dialogOpen}
         workspace={workspaceData}
-        name="Project"
       />
     </div>
   );

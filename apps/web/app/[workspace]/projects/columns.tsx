@@ -10,7 +10,7 @@ const statusColors: Record<
 > = {
   backlog: "outline",
   planned: "secondary",
-  in_progress: "default",
+  in_progress: "outline",
   completed: "default",
   cancelled: "destructive",
 };
@@ -55,7 +55,10 @@ export const columns: ColumnDef<Project>[] = [
     cell: ({ row }) => {
       const status = row.original.status;
       return (
-        <Badge variant={statusColors[status]}>
+        <Badge
+          className={`${status === "in_progress" ? "border-yellow-500/20 bg-yellow-500/20 text-yellow-700" : ""}`}
+          variant={statusColors[status]}
+        >
           {status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
         </Badge>
       );

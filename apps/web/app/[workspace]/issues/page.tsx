@@ -7,5 +7,5 @@ export default function IssuesPage() {
         <IssuesTable />
       </div>
     </>
-  )
+  );
 }

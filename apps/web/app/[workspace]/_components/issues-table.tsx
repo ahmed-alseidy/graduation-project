@@ -1,13 +1,13 @@
 import {
-  Loader as BacklogIcon,
-  ShieldX as CancelledIcon,
-  ShieldCheck as CompleteIcon,
+  CheckCircle2,
+  Circle,
+  CircleDashed,
+  CircleOff,
+  Clock,
   SignalHigh as HighPriorityIcon,
-  ShieldEllipsis as InProgressIcon,
   SignalLow as LowPriorityIcon,
   SignalMedium as MediumPriorityIcon,
   Ellipsis as NoPriorityIcon,
-  Shield as PlannedIcon,
   Plus,
   OctagonAlert as UrgentPriorityIcon,
 } from "lucide-react";
@@ -23,27 +23,27 @@ const statusConfig = [
   {
     value: "backlog",
     label: "Backlog",
-    icon: <BacklogIcon className="text-[#f2994a]" size={14} />,
+    icon: <CircleDashed className="text-[#f2994a]" size={14} />,
   },
   {
     value: "planned",
     label: "Planned",
-    icon: <PlannedIcon className="text-[#d7d8db]" size={14} />,
+    icon: <Circle className="text-[#d7d8db]" size={14} />,
   },
   {
     value: "in_progress",
     label: "In Progress",
-    icon: <InProgressIcon className="text-[#f0bf00]" size={14} />,
+    icon: <Clock className="text-[#f0bf00]" size={14} />,
   },
   {
     value: "completed",
     label: "Completed",
-    icon: <CompleteIcon className="text-[#5e6ad2]" size={14} />,
+    icon: <CheckCircle2 className="text-[#5e6ad2]" size={14} />,
   },
   {
     value: "cancelled",
     label: "Cancelled",
-    icon: <CancelledIcon className="text-[#8a8f98]" size={14} />,
+    icon: <CircleOff className="text-[#8a8f98]" size={14} />,
   },
 ] as const;
 
@@ -103,7 +103,7 @@ function TaskRow({ task }: { task: ProjectTask }) {
         <span className="shrink-0 opacity-60 transition-opacity group-hover:opacity-100">
           {priority?.icon}
         </span>
-        <span className="w-22 shrink-0 truncate font-mono text-muted-foreground text-xs">
+        <span className="w-20 shrink-0 truncate font-mono text-muted-foreground text-xs">
           {taskShortId}
         </span>
         <span className="shrink-0">{status?.icon}</span>

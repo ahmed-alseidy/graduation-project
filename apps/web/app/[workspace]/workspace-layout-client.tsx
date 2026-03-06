@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
+const regex = /\/(overview|issues)\/?$/;
+
 export function WorkspaceLayoutClient({
   children,
 }: {
@@ -17,7 +19,7 @@ export function WorkspaceLayoutClient({
   const { project } = useParams();
 
   const navigateTo = (target: "overview" | "issues") => {
-    const base = pathname?.replace(/\/(overview|issues)\/?$/, "") ?? "";
+    const base = pathname?.replace(regex, "") ?? "";
     router.replace(`${base}/${target}`);
   };
 
@@ -31,7 +33,7 @@ export function WorkspaceLayoutClient({
         {!isSettingsRoute && (
           <header className="flex h-12 w-full shrink-0 items-center gap-4 border-b px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
             <SidebarTrigger className="-ml-1" />
-            <Separator className="h-4 bg-border" orientation="vertical" />
+            <Separator className="h-full bg-border" orientation="vertical" />
             {isProjectRoute ? (
               <div className="flex items-center gap-2">
                 <Button
