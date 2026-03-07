@@ -1,26 +1,37 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useAtom } from "jotai";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import IssuesTable from "@/app/[workspace]/_components/issues-table";
 import { Loading } from "@/components/loading";
-import { currentWorkspaceAtom } from "@/lib/atoms/current-workspace";
 import { attempt } from "@/lib/error-handling";
 import { getProjectTasks } from "@/lib/projects";
+import { findWorkspaceBySlug } from "@/lib/workspace";
 
 export default function ProjectIssues() {
-  const [currentWorkspace] = useAtom(currentWorkspaceAtom);
-
   const params = useParams();
   const projectId = params.project as string;
+  const slug = decodeURIComponent(params.workspace as string);
+
+  const { data: workspaceData, isLoading: isWorkspaceLoading } = useQuery({
+    queryKey: ["workspace", slug],
+    enabled: !!slug,
+    queryFn: async () => {
+      const [result, error] = await attempt(findWorkspaceBySlug(slug));
+      if (error || !result) {
+        toast.error("Error while fetching workspace");
+        throw new Error("Failed to fetch workspace");
+      }
+      return result.data.workspace;
+    },
+  });
 
   const { data: projectTaskData, isLoading } = useQuery({
     queryKey: ["tasks", projectId],
     queryFn: async () => {
       const [projectTaskResult, projectTaskError] = await attempt(
-        getProjectTasks(currentWorkspace?.id ?? "", projectId)
+        getProjectTasks(workspaceData?.id ?? "", projectId)
       );
       if (projectTaskError || !projectTaskResult) {
         toast.error("Error while fetching project tasks");
@@ -28,7 +39,7 @@ export default function ProjectIssues() {
       }
       return projectTaskResult.data.tasks;
     },
-    enabled: !!currentWorkspace?.id && !!projectId,
+    enabled: !!workspaceData?.id && !!projectId,
   });
 
   if (isLoading) {

@@ -1,14 +1,12 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAtom } from "jotai";
 import { CalendarRange, Gauge, Signal, User } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Loading } from "@/components/loading";
 import { Textarea } from "@/components/ui/textarea";
-import { currentWorkspaceAtom } from "@/lib/atoms/current-workspace";
 import { attempt } from "@/lib/error-handling";
 import {
   getProject,
@@ -16,6 +14,7 @@ import {
   type UpdateProjectData,
   updateProject,
 } from "@/lib/projects";
+import { findWorkspaceBySlug } from "@/lib/workspace";
 import DateSelect from "../../_components/date-select";
 import StatusPriority from "../../_components/status-priority";
 
@@ -42,7 +41,7 @@ function PropertyRow({
 export default function ProjectOverview() {
   const params = useParams();
   const projectId = params.project as string;
-  const [currentWorkspace] = useAtom(currentWorkspaceAtom);
+  const slug = decodeURIComponent(params.workspace as string);
 
   const [projectName, setProjectName] = useState("");
   const [description, setDescription] = useState("");
@@ -74,15 +73,27 @@ export default function ProjectOverview() {
 
   const isInitialized = useRef(false);
 
-  const workspaceId = currentWorkspace?.id;
   const queryClient = useQueryClient();
 
+  const { data: workspaceData, isLoading: isWorkspaceLoading } = useQuery({
+    queryKey: ["workspace", slug],
+    enabled: !!slug,
+    queryFn: async () => {
+      const [result, error] = await attempt(findWorkspaceBySlug(slug));
+      if (error || !result) {
+        toast.error("Error while fetching workspace");
+        throw new Error("Failed to fetch workspace");
+      }
+      return result.data.workspace;
+    },
+  });
+
   const { data: projectData, isLoading } = useQuery({
-    queryKey: ["project", workspaceId, projectId],
-    enabled: !!workspaceId && !!projectId,
+    queryKey: ["project", workspaceData?.id, projectId],
+    enabled: !!workspaceData?.id && !!projectId,
     queryFn: async () => {
       const [result, error] = await attempt(
-        getProject(workspaceId as string, projectId)
+        getProject(workspaceData?.id ?? "", projectId)
       );
       if (error || !result) {
         toast.error("Failed to load project");
@@ -114,11 +125,11 @@ export default function ProjectOverview() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: UpdateProjectData) => {
-      if (!workspaceId) {
+      if (!workspaceData?.id) {
         throw new Error("No workspace selected");
       }
       const [result, error] = await attempt(
-        updateProject(workspaceId, projectId, data)
+        updateProject(workspaceData.id, projectId, data)
       );
       if (error || !result) {
         throw new Error("Failed to update project");
@@ -197,7 +208,7 @@ export default function ProjectOverview() {
     return () => clearTimeout(id);
   }, [projectName, description, updateMutation.mutate]);
 
-  if (isLoading) {
+  if (isLoading || isWorkspaceLoading) {
     return <Loading />;
   }
 
