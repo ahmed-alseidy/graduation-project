@@ -123,6 +123,7 @@ export function CreateTaskDialog({
     onSuccess: () => {
       toast.success("Issue created successfully");
       queryClient.invalidateQueries({ queryKey: ["projects", workspace.id] });
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
       form.reset();
       onOpenChange(false);
     },

@@ -155,7 +155,7 @@ export function CreateProjectDialog({
                 <StatusPriority form={form.control} />
                 <div className="flex gap-2">
                   <Button
-                    className="h-8 gap-1.5"
+                    className="gap-1.5"
                     size="sm"
                     type="button"
                     variant="outline"
@@ -164,7 +164,7 @@ export function CreateProjectDialog({
                     Lead
                   </Button>
                   <Button
-                    className="h-8 gap-1.5"
+                    className="gap-1.5"
                     size="sm"
                     type="button"
                     variant="outline"
