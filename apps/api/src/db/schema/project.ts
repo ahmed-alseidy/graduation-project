@@ -24,6 +24,9 @@ export const projects = pgTable(
     priority: integer("priority").notNull().default(0),
     startDate: timestamp("start_date").defaultNow().notNull(),
     endDate: timestamp("end_date"),
+    leadId: text("lead_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
     workspaceId: uuid("workspace_id")
       .references(() => workspaces.id, { onDelete: "cascade" })
       .notNull(),
@@ -42,6 +45,10 @@ export const projectRelations = relations(projects, ({ one }) => ({
     fields: [projects.workspaceId],
     references: [workspaces.id],
   }),
+  lead: one(users, {
+    fields: [projects.leadId],
+    references: [users.id],
+  }),
 }));
 
 export const tasks = pgTable(
@@ -53,18 +60,21 @@ export const tasks = pgTable(
     projectId: uuid("project_id")
       .references(() => projects.id, { onDelete: "cascade" })
       .notNull(),
+    workspaceId: uuid("workspace_id")
+      .references(() => workspaces.id, { onDelete: "cascade" })
+      .notNull(),
     assigneeId: text("assignee_id").references(() => users.id),
     status: text("status", {
-      enum: ["todo", "in_progress", "done"],
+      enum: ["backlog", "planned", "in_progress", "completed", "cancelled"],
     })
       .notNull()
-      .default("todo"),
+      .default("backlog"),
     dueDate: timestamp("due_date"),
-    priority: integer("priority").notNull().default(0), // 0: low, 1: medium, 2: high
+    priority: integer("priority").notNull().default(0), // 0: no priority, 1: low, 2: medium, 3: high, 4: urgent
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (t) => [
-    check("priority_check", sql`${t.priority} >= 0 AND ${t.priority} <= 2`),
+    check("priority_check", sql`${t.priority} >= 0 AND ${t.priority} <= 4`),
   ]
 );
 
@@ -72,6 +82,10 @@ export const taskRelations = relations(tasks, ({ one }) => ({
   project: one(projects, {
     fields: [tasks.projectId],
     references: [projects.id],
+  }),
+  workspace: one(workspaces, {
+    fields: [tasks.workspaceId],
+    references: [workspaces.id],
   }),
   assignee: one(users, {
     fields: [tasks.assigneeId],
