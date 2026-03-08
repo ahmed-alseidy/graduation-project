@@ -97,7 +97,7 @@ export function AssignUserPopover({
     >
       <PopoverTrigger asChild>
         <Button
-          className="h-8 gap-2 px-2.5"
+          className="gap-2 px-2.5"
           disabled={isLoading}
           size="sm"
           type="button"

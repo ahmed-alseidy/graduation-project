@@ -6,10 +6,11 @@ import { format } from "date-fns";
 import { useSetAtom } from "jotai";
 import { ChevronRight } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { AssignUserPopover } from "@/components/assign-user-popover";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -71,6 +72,7 @@ const schema = z.object({
   priority: z.number().min(0).max(4),
   projectId: z.string().min(1, "Project is required"),
   dueDate: z.date().nullable().optional(),
+  assigneeId: z.string().nullable().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -84,6 +86,7 @@ export function CreateTaskDialog({
   const { project } = useParams();
   const queryClient = useQueryClient();
   const setProjectsData = useSetAtom(projectsDataAtom);
+  const [assigneeId, setAssigneeId] = useState<string | undefined>(undefined);
 
   const projectId = project as string;
 
@@ -96,6 +99,7 @@ export function CreateTaskDialog({
       priority: 0,
       projectId: projectId || "",
       dueDate: undefined,
+      assigneeId,
     },
     mode: "onChange",
   });
@@ -162,7 +166,13 @@ export function CreateTaskDialog({
       priority: data.priority,
       projectId: data.projectId,
       dueDate: data.dueDate ?? undefined,
+      assigneeId: assigneeId ?? undefined,
     });
+  }
+
+  function handleAssigneeChange(userId: string | null) {
+    setAssigneeId(userId ?? undefined);
+    form.setValue("assigneeId", userId ?? undefined);
   }
 
   return (
@@ -213,6 +223,11 @@ export function CreateTaskDialog({
 
               <div className="flex gap-2">
                 <StatusPriority form={form.control} showProjectSelector />
+                <AssignUserPopover
+                  currentAssigneeId={assigneeId}
+                  onAssign={handleAssigneeChange}
+                  workspaceId={workspace.id}
+                />
                 <FormField
                   control={form.control}
                   name="dueDate"
