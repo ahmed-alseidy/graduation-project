@@ -29,6 +29,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -46,7 +47,11 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { attempt } from "@/lib/error-handling";
 import { deleteProject, listProjects, type Project } from "@/lib/projects";
-import { findWorkspaceBySlug } from "@/lib/workspace";
+import {
+  findWorkspaceBySlug,
+  getWorkspaceMembers,
+  type WorkspaceMember,
+} from "@/lib/workspace";
 import { CreateProjectDialog } from "./_components/create-project-dialog";
 
 const STATUS_CONFIG = {
@@ -153,14 +158,72 @@ function StatCard({
   );
 }
 
+function getInitials(name: string | null, email: string | null): string {
+  if (name) {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  }
+  if (email) {
+    return (email[0] ?? "?").toUpperCase();
+  }
+  return "?";
+}
+
+function ProjectCardFooter({
+  start,
+  end,
+  lead,
+}: {
+  start: string | null;
+  end: string | null;
+  lead?: WorkspaceMember;
+}) {
+  if (start === null && end === null && !lead) {
+    return null;
+  }
+  return (
+    <CardFooter className="flex items-center justify-between gap-1.5 text-muted-foreground text-xs">
+      <div className="flex items-center gap-1.5">
+        {start !== null ? (
+          <>
+            <CalendarDays className="size-3 shrink-0" />
+            <span>{start}</span>
+          </>
+        ) : null}
+        {start !== null && end !== null ? <span>→</span> : null}
+        {end !== null ? <span>{end}</span> : null}
+      </div>
+      {lead ? (
+        <div className="flex items-center gap-1.5">
+          <Avatar className="size-5 shrink-0">
+            <AvatarImage alt={lead.name ?? ""} src={lead.image ?? undefined} />
+            <AvatarFallback className="font-medium text-[9px]">
+              {getInitials(lead.name, lead.email)}
+            </AvatarFallback>
+          </Avatar>
+          <span className="max-w-[100px] truncate">
+            {lead.name ?? lead.email}
+          </span>
+        </div>
+      ) : null}
+    </CardFooter>
+  );
+}
+
 function ProjectCard({
   project,
   href,
   onDelete,
+  lead,
 }: {
   project: Project;
   href: string;
   onDelete: (project: Project) => void;
+  lead?: WorkspaceMember;
 }) {
   const status = STATUS_CONFIG[project.status];
   const priority = PRIORITY_CONFIG[project.priority] ?? PRIORITY_CONFIG[0];
@@ -239,14 +302,7 @@ function ProjectCard({
           </div>
         </CardContent>
 
-        {start !== null || end !== null ? (
-          <CardFooter className="flex items-center gap-1.5 text-muted-foreground text-xs">
-            <CalendarDays className="size-3 shrink-0" />
-            {start !== null ? <span>{start}</span> : null}
-            {start !== null && end !== null ? <span>→</span> : null}
-            {end !== null ? <span>{end}</span> : null}
-          </CardFooter>
-        ) : null}
+        <ProjectCardFooter end={end} lead={lead} start={start} />
       </Card>
     </Link>
   );
@@ -308,6 +364,20 @@ export default function ProjectsPage() {
     enabled: !!workspaceData?.id,
   });
 
+  const { data: members = [] } = useQuery({
+    queryKey: ["workspace-members", workspaceData?.id],
+    queryFn: async () => {
+      const [result, error] = await attempt(
+        getWorkspaceMembers(workspaceData?.id ?? "")
+      );
+      if (error || !result) {
+        return [];
+      }
+      return result.data.members;
+    },
+    enabled: !!workspaceData?.id,
+  });
+
   const { mutate: handleDelete, isPending: isDeleting } = useMutation({
     mutationFn: (projectId: string) =>
       deleteProject(workspaceData?.id ?? "", projectId),
@@ -350,7 +420,6 @@ export default function ProjectsPage() {
 
   return (
     <div className="flex min-h-[calc(100vh-10rem)] flex-col gap-6 p-6">
-      {/* Header */}
       <div className="flex items-start justify-between">
         <div>
           <h1 className="font-semibold text-2xl">Projects</h1>
@@ -366,7 +435,6 @@ export default function ProjectsPage() {
         </Button>
       </div>
 
-      {/* Stat cards */}
       {projects.length > 0 && (
         <>
           <div className="grid grid-cols-2 gap-px bg-border sm:grid-cols-3 lg:grid-cols-6">
@@ -418,7 +486,6 @@ export default function ProjectsPage() {
         </>
       )}
 
-      {/* Active filter label */}
       {statusFilter !== "all" && (
         <div className="flex items-center gap-2">
           <span className="text-muted-foreground text-sm">
@@ -438,7 +505,6 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {/* Grid or empty */}
       {filtered.length === 0 ? (
         <EmptyState onNew={() => setDialogOpen(true)} />
       ) : (
@@ -447,6 +513,7 @@ export default function ProjectsPage() {
             <ProjectCard
               href={pathname}
               key={project.id}
+              lead={members.find((m) => m.userId === project.leadId)}
               onDelete={setProjectToDelete}
               project={project}
             />
