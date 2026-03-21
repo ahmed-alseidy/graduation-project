@@ -79,7 +79,6 @@ export class ProjectsService {
   }
 
   async updateProject(projectId: string, body: UpdateProjectDto) {
-    console.log("body", body);
     const [project, projectError] = await attempt(
       db
         .update(projects)
@@ -95,7 +94,6 @@ export class ProjectsService {
         .where(eq(projects.id, projectId))
         .returning({ id: projects.id })
     );
-    console.log("projectError", projectError);
     if (projectError) {
       throw new InternalServerErrorException("Failed to update project");
     }
