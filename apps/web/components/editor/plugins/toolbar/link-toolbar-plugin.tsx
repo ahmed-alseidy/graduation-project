@@ -1,0 +1,92 @@
+"use client";
+
+import { $isLinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link";
+import {
+  $isRangeSelection,
+  BaseSelection,
+  COMMAND_PRIORITY_NORMAL,
+  KEY_MODIFIER_COMMAND,
+} from "lexical";
+import { LinkIcon } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+
+import { useToolbarContext } from "@/components/editor/context/toolbar-context";
+import { useUpdateToolbarHandler } from "@/components/editor/editor-hooks/use-update-toolbar";
+import { getSelectedNode } from "@/components/editor/utils/get-selected-node";
+import { sanitizeUrl } from "@/components/editor/utils/url";
+import { Toggle } from "@/components/ui/toggle";
+
+export function LinkToolbarPlugin({
+  setIsLinkEditMode,
+}: {
+  setIsLinkEditMode: (isEditMode: boolean) => void;
+}) {
+  const { activeEditor } = useToolbarContext();
+  const [isLink, setIsLink] = useState(false);
+
+  const $updateToolbar = (selection: BaseSelection) => {
+    if ($isRangeSelection(selection)) {
+      const node = getSelectedNode(selection);
+      const parent = node.getParent();
+      if ($isLinkNode(parent) || $isLinkNode(node)) {
+        setIsLink(true);
+      } else {
+        setIsLink(false);
+      }
+    }
+  };
+
+  useUpdateToolbarHandler($updateToolbar);
+
+  useEffect(
+    () =>
+      activeEditor.registerCommand(
+        KEY_MODIFIER_COMMAND,
+        (payload) => {
+          const event: KeyboardEvent = payload;
+          const { code, ctrlKey, metaKey } = event;
+
+          if (code === "KeyK" && (ctrlKey || metaKey)) {
+            event.preventDefault();
+            let url: string | null;
+            if (isLink) {
+              setIsLinkEditMode(false);
+              url = null;
+            } else {
+              setIsLinkEditMode(true);
+              url = sanitizeUrl("https://");
+            }
+            return activeEditor.dispatchCommand(TOGGLE_LINK_COMMAND, url);
+          }
+          return false;
+        },
+        COMMAND_PRIORITY_NORMAL
+      ),
+    [activeEditor, isLink, setIsLinkEditMode]
+  );
+
+  const insertLink = useCallback(() => {
+    if (isLink) {
+      setIsLinkEditMode(false);
+      activeEditor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
+    } else {
+      setIsLinkEditMode(true);
+      activeEditor.dispatchCommand(
+        TOGGLE_LINK_COMMAND,
+        sanitizeUrl("https://")
+      );
+    }
+  }, [activeEditor, isLink, setIsLinkEditMode]);
+
+  return (
+    <Toggle
+      aria-label="Toggle link"
+      className="!size-8"
+      onClick={insertLink}
+      size="sm"
+      variant={"outline"}
+    >
+      <LinkIcon className="h-4 w-4" />
+    </Toggle>
+  );
+}

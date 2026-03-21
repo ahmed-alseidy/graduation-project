@@ -18,6 +18,7 @@ import {
 import { findWorkspaceBySlug } from "@/lib/workspace";
 import DateSelect from "../../_components/date-select";
 import StatusPriority from "../../_components/status-priority";
+import { DescriptionEditor } from "./_components/description-editor";
 
 function PropertyRow({
   icon,
@@ -272,12 +273,13 @@ export default function ProjectOverview() {
           <span className="text-muted-foreground text-sm">—</span>
         </PropertyRow>
       </div>
-      <Textarea
-        className="mt-8 min-h-[72px] resize-none border-none bg-background! shadow-none focus-visible:ring-0"
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder="Add a project description..."
-        value={description}
-      />
+      {projectData ? (
+        <DescriptionEditor
+          description={projectData.description ?? ""}
+          key={projectData.id}
+          setDescription={setDescription}
+        />
+      ) : null}
     </div>
   );
 }
