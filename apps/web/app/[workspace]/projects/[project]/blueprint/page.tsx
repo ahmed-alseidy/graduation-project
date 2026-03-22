@@ -238,7 +238,7 @@ export default function BlueprintInputPage() {
 
           <Button
             asChild
-            className="h-11 w-full shrink-0 gap-2 self-stretch border-foreground/15 bg-background/60 font-medium shadow-none backdrop-blur-sm transition-colors hover:bg-foreground/[0.04] md:h-10 md:w-auto"
+            className="h-11 w-full shrink-0 gap-2 self-stretch border-foreground/15 bg-background/60 font-medium shadow-none backdrop-blur-sm transition-colors hover:bg-foreground/4 md:h-10 md:w-auto"
             size="sm"
             variant="outline"
           >
@@ -271,7 +271,7 @@ export default function BlueprintInputPage() {
             <div className="relative flex flex-col">
               <div
                 aria-hidden
-                className="-inset-px pointer-events-none absolute border border-foreground/10 bg-gradient-to-br from-card/80 via-background/40 to-transparent dark:from-card/50"
+                className="-inset-px pointer-events-none absolute border border-foreground/10 bg-linear-to-br from-card/80 via-background/40 to-transparent dark:from-card/50"
               />
               <div
                 aria-hidden
@@ -296,7 +296,7 @@ export default function BlueprintInputPage() {
                   name="description"
                   render={({ field }) => (
                     <FormItem className="gap-0 space-y-0">
-                      <div className="flex items-center justify-between border-foreground/10 border-b bg-foreground/[0.02] px-3 py-2 dark:bg-foreground/[0.03]">
+                      <div className="flex items-center justify-between border-foreground/10 border-b bg-foreground/2 px-3 py-2 dark:bg-foreground/3">
                         <span className="font-mono text-[10px] text-muted-foreground tracking-wide">
                           idea_description.txt
                         </span>
@@ -323,7 +323,7 @@ export default function BlueprintInputPage() {
                           className={cn(
                             "min-h-[260px] resize-none border-0 bg-transparent px-3 py-3 font-mono text-[13px] leading-relaxed",
                             "placeholder:text-muted-foreground/30 focus-visible:ring-0 focus-visible:ring-offset-0",
-                            "transition-[box-shadow] focus-visible:shadow-[inset_0_0_0_1px_oklch(0.488_0.243_264.376/0.45)] dark:focus-visible:shadow-[inset_0_0_0_1px_oklch(0.55_0.18_266/0.5)]"
+                            "transition-shadow focus-visible:shadow-[inset_0_0_0_1px_oklch(0.488_0.243_264.376/0.45)] dark:focus-visible:shadow-[inset_0_0_0_1px_oklch(0.55_0.18_266/0.5)]"
                           )}
                           disabled={isGenerating}
                           placeholder={
@@ -350,7 +350,7 @@ export default function BlueprintInputPage() {
                   )}
                 />
 
-                <div className="flex flex-col gap-3 border-foreground/10 border-t bg-foreground/[0.02] px-3 py-3 sm:flex-row sm:items-center sm:justify-between dark:bg-foreground/[0.025]">
+                <div className="flex flex-col gap-3 border-foreground/10 border-t bg-foreground/2 px-3 py-3 sm:flex-row sm:items-center sm:justify-between dark:bg-foreground/2.5">
                   <p className="text-[11px] text-muted-foreground/70 leading-snug">
                     Richer briefs yield sharper schemas and stack choices.
                   </p>
@@ -381,7 +381,7 @@ export default function BlueprintInputPage() {
                   }}
                 />
 
-                <div className="relative flex items-center justify-between border-foreground/10 border-b bg-foreground/[0.03] px-3 py-2 dark:bg-foreground/[0.04]">
+                <div className="relative flex items-center justify-between border-foreground/10 border-b bg-foreground/3 px-3 py-2 dark:bg-foreground/4">
                   <span className="font-mono text-[10px] text-muted-foreground uppercase tracking-[0.2em]">
                     Deliverables
                   </span>
@@ -394,7 +394,7 @@ export default function BlueprintInputPage() {
                   {BLUEPRINT_OUTPUTS.map(
                     ({ icon: Icon, label, description, index }, i) => (
                       <div
-                        className="group relative flex items-start gap-3 px-3 py-3.5 transition-colors duration-300 hover:bg-foreground/[0.03]"
+                        className="group relative flex items-start gap-3 px-3 py-3.5 transition-colors duration-300 hover:bg-foreground/3"
                         key={label}
                         style={{
                           animationDelay: `${i * 45}ms`,
@@ -408,7 +408,7 @@ export default function BlueprintInputPage() {
                         >
                           {index}
                         </span>
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center border border-foreground/10 bg-background/50 transition-colors group-hover:border-primary/25 group-hover:bg-primary/[0.06]">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center border border-foreground/10 bg-background/50 transition-colors group-hover:border-primary/25 group-hover:bg-primary/6">
                           <Icon className="size-3.5 text-muted-foreground transition-colors group-hover:text-primary" />
                         </div>
                         <div className="min-w-0 pt-0.5">
