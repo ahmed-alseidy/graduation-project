@@ -74,7 +74,7 @@ export function LoginForm() {
       workspacesData.workspaces.length > 0
     ) {
       router.push(
-        `/${encodeURIComponent(workspacesData.workspaces[0]?.slug ?? "")}`
+        `/${encodeURIComponent(workspacesData.workspaces[0]?.slug ?? "")}/my-issues`
       );
     }
   }, [auth.data?.session?.expiresAt, workspacesData, router]);
@@ -98,7 +98,7 @@ export function LoginForm() {
       }
       if (result?.data.workspaces.length >= 1) {
         router.push(
-          `/${encodeURIComponent(result.data.workspaces[0]?.slug ?? "")}`
+          `/${encodeURIComponent(result.data.workspaces[0]?.slug ?? "")}/my-issues`
         );
       } else {
         router.push("/workspaces/new");

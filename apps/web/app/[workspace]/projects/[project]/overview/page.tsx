@@ -1,12 +1,17 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarRange, Gauge, Signal, User } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AssignUserPopover } from "@/components/assign-user-popover";
 import { Loading } from "@/components/loading";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Textarea } from "@/components/ui/textarea";
 import { attempt } from "@/lib/error-handling";
 import {
@@ -15,26 +20,27 @@ import {
   type UpdateProjectData,
   updateProject,
 } from "@/lib/projects";
+import { cn } from "@/lib/utils";
 import { findWorkspaceBySlug } from "@/lib/workspace";
 import DateSelect from "../../_components/date-select";
 import StatusPriority from "../../_components/status-priority";
+import { DescriptionEditor } from "./_components/description-editor";
 
 function PropertyRow({
-  icon,
   label,
   children,
 }: {
-  icon: React.ReactNode;
   label: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="grid grid-cols-[180px_1fr] items-center gap-4 py-2">
-      <div className="flex items-center gap-2 text-muted-foreground text-sm">
-        <span className="shrink-0">{icon}</span>
-        <span>{label}</span>
+    <div className="grid grid-cols-1 gap-2 py-2 sm:grid-cols-[minmax(0,7rem)_1fr] sm:items-start sm:gap-10">
+      <div className="pt-0.5 text-[13px] text-muted-foreground leading-none">
+        {label}
       </div>
-      <div className="flex items-center">{children}</div>
+      <div className="min-w-0 text-[13px] text-foreground leading-snug">
+        {children}
+      </div>
     </div>
   );
 }
@@ -226,58 +232,78 @@ export default function ProjectOverview() {
   }
 
   return (
-    <div className="px-8 py-10">
-      <Textarea
-        className="min-h-12 resize-none border-none bg-background! p-0 font-bold text-2xl! shadow-none focus-visible:ring-0 md:text-3xl"
-        onChange={(e) => setProjectName(e.target.value)}
-        placeholder="Untitled Project"
-        rows={1}
-        value={projectName}
-      />
+    <div className="min-h-full bg-background">
+      <div className="px-6 py-8 md:px-8 md:py-10">
+        <p className="text-muted-foreground text-xs leading-none tracking-wide">
+          Overview
+        </p>
 
-      <div className="flex flex-col border-b pb-4">
-        <PropertyRow
-          icon={<Gauge className="size-4" />}
-          label="Status & Priority"
-        >
-          <StatusPriority
-            selectedPriority={selectedPriority}
-            selectedStatus={selectedStatus}
-            setSelectedPriority={handlePriorityChange}
-            setSelectedStatus={handleStatusChange}
-          />
-        </PropertyRow>
+        <Textarea
+          className={cn(
+            "mt-3 min-h-12 w-full resize-none border-none bg-transparent! p-0 font-semibold text-2xl! leading-tight shadow-none! ring-0! transition-colors",
+            "placeholder:text-muted-foreground/50 focus-visible:ring-0",
+            "md:text-3xl! md:leading-tight",
+            "[font-family:var(--font-geist-sans),system-ui,sans-serif]"
+          )}
+          onChange={(e) => setProjectName(e.target.value)}
+          placeholder="Project name"
+          rows={1}
+          value={projectName}
+        />
 
-        <PropertyRow
-          icon={<CalendarRange className="size-4" />}
-          label="Timeline"
-        >
-          <DateSelect
-            setStartDate={handleStartDateChange}
-            setTargetDate={handleTargetDateChange}
-            startDate={startDate}
-            targetDate={targetDate}
-          />
-        </PropertyRow>
+        <section aria-label="Project properties" className="mt-2">
+          <PropertyRow label="Status">
+            <StatusPriority
+              selectedPriority={selectedPriority}
+              selectedStatus={selectedStatus}
+              setSelectedPriority={handlePriorityChange}
+              setSelectedStatus={handleStatusChange}
+            />
+          </PropertyRow>
+          <PropertyRow label="Dates">
+            <DateSelect
+              setStartDate={handleStartDateChange}
+              setTargetDate={handleTargetDateChange}
+              startDate={startDate}
+              targetDate={targetDate}
+            />
+          </PropertyRow>
+          <PropertyRow label="Lead">
+            <AssignUserPopover
+              currentAssigneeId={projectData?.leadId ?? undefined}
+              onAssign={handleLeadChange}
+              workspaceId={workspaceData?.id ?? ""}
+            />
+          </PropertyRow>
+          <PropertyRow label="Progress">
+            <span className="text-muted-foreground">—</span>
+          </PropertyRow>
+        </section>
 
-        <PropertyRow icon={<User className="size-4" />} label="Lead">
-          <AssignUserPopover
-            currentAssigneeId={projectData?.leadId ?? undefined}
-            onAssign={handleLeadChange}
-            workspaceId={workspaceData?.id ?? ""}
-          />
-        </PropertyRow>
-
-        <PropertyRow icon={<Signal className="size-4" />} label="Progress">
-          <span className="text-muted-foreground text-sm">—</span>
-        </PropertyRow>
+        {projectData ? (
+          <section
+            aria-label="Description"
+            className="mt-10 border-border/80 border-t pt-8"
+          >
+            <Accordion collapsible defaultValue="description" type="single">
+              <AccordionItem value="description">
+                <AccordionTrigger>
+                  <h2 className="font-medium text-muted-foreground text-xs uppercase tracking-[0.08em]">
+                    Description
+                  </h2>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <DescriptionEditor
+                    description={projectData.description ?? ""}
+                    key={projectData.id}
+                    setDescription={setDescription}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </section>
+        ) : null}
       </div>
-      <Textarea
-        className="mt-8 min-h-[72px] resize-none border-none bg-background! shadow-none focus-visible:ring-0"
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder="Add a project description..."
-        value={description}
-      />
     </div>
   );
 }

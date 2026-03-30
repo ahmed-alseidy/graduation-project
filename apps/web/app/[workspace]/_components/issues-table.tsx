@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { MoreHorizontal, Plus, Trash2 } from "lucide-react";
+import { ArrowRight, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -21,6 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -74,66 +75,81 @@ function TaskRow({
   }, [task.assigneeId]);
 
   return (
-    <div className="group flex items-center border-border/50 border-b transition-colors hover:bg-accent/40">
-      {/* Main clickable area */}
+    <div className="group hover:-translate-y-[2px] relative flex items-stretch border-border/40 border-b bg-background transition-all duration-300 hover:z-10 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.05)]">
+      <div className="flex w-16 shrink-0 items-center justify-center border-border/40 border-r px-2 font-mono text-[10px] text-muted-foreground tracking-wider">
+        {taskShortId}
+      </div>
+
+      <div className="flex w-12 shrink-0 items-center justify-center border-border/40 border-r opacity-70 transition-opacity group-hover:opacity-100">
+        {priority?.icon}
+      </div>
+
       <button
-        className="flex min-w-0 flex-1 items-center gap-3 px-4 py-2 text-left"
+        className="flex min-w-0 flex-1 items-center gap-4 px-5 py-3 text-left outline-none"
         onClick={handleNavigate}
         type="button"
       >
-        <span className="shrink-0 opacity-50 transition-opacity group-hover:opacity-100">
-          {priority?.icon}
+        <span className="truncate font-medium text-foreground transition-colors group-hover:text-primary">
+          {task.name}
         </span>
-        <span className="w-20 shrink-0 truncate font-mono text-muted-foreground text-xs">
-          {taskShortId}
-        </span>
-        <span className="shrink-0">{status?.icon}</span>
-        <span className="truncate text-foreground text-sm">{task.name}</span>
+        <ArrowRight className="-translate-x-2 size-3 text-primary opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
       </button>
 
-      <div className="flex shrink-0 items-center gap-3 pr-3">
+      <div className="flex shrink-0 items-center border-border/40 border-l">
         {dueDate !== null && (
-          <span className="text-muted-foreground text-xs tabular-nums">
-            {dueDate}
-          </span>
-        )}
-
-        {task.assigneeName ? (
-          <div
-            className="flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-white"
-            title={task.assigneeId}
-          >
-            <span className="font-semibold text-[10px] leading-none">
-              {task.assigneeName?.slice(0, 2).toUpperCase() ?? "?"}
+          <div className="flex h-full items-center justify-center border-border/40 border-r px-4">
+            <span className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
+              {dueDate}
             </span>
           </div>
-        ) : (
-          <div className="size-5 shrink-0 rounded-sm border border-border border-dashed" />
         )}
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              className="flex size-6 items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
-              type="button"
+        <div className="flex h-full w-14 items-center justify-center border-border/40 border-r">
+          {task.assigneeName ? (
+            <div
+              className="flex size-6 items-center justify-center rounded border border-primary/20 bg-primary/10 text-primary"
+              title={task.assigneeName}
             >
-              <MoreHorizontal size={14} />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-44">
-            <DropdownMenuItem onClick={handleNavigate}>
-              Open issue
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => onDeleteRequest(task)}
-              variant="destructive"
+              <span className="font-bold font-mono text-[10px] leading-none">
+                {task.assigneeName?.slice(0, 2).toUpperCase() ?? "?"}
+              </span>
+            </div>
+          ) : (
+            <div className="size-6 rounded border border-border/50 border-dashed bg-muted/30" />
+          )}
+        </div>
+
+        <div className="flex h-full items-center justify-center px-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="flex size-8 items-center justify-center rounded-sm text-muted-foreground transition-all hover:bg-foreground hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                type="button"
+              >
+                <MoreHorizontal size={14} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-48 rounded-none border-2 p-0 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]"
             >
-              <Trash2 size={14} />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuItem
+                className="cursor-pointer rounded-none px-4 py-3 font-mono text-xs uppercase tracking-wider focus:bg-primary focus:text-primary-foreground"
+                onClick={handleNavigate}
+              >
+                Open issue
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="m-0" />
+              <DropdownMenuItem
+                className="cursor-pointer rounded-none px-4 py-3 font-mono text-destructive text-xs uppercase tracking-wider focus:bg-destructive focus:text-destructive-foreground"
+                onClick={() => onDeleteRequest(task)}
+              >
+                <Trash2 className="mr-2" size={14} />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </div>
   );
@@ -141,9 +157,12 @@ function TaskRow({
 
 function EmptyState({ label }: { label: string }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-3">
-      <span className="text-muted-foreground text-xs italic">
-        No {label.toLowerCase()} issues
+    <div className="flex flex-col items-center justify-center gap-2 border-border/40 border-b bg-muted/10 py-12">
+      <div className="mb-2 flex size-12 items-center justify-center rounded-full border border-border border-dashed text-muted-foreground/50">
+        <span className="font-serif text-2xl italic">?</span>
+      </div>
+      <span className="font-mono text-muted-foreground text-xs uppercase tracking-widest">
+        No {label} issues
       </span>
     </div>
   );
@@ -218,8 +237,9 @@ export default function IssuesTable({
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full border-border/40 border-x border-t bg-background/50 backdrop-blur-sm">
       <Accordion
+        className="w-full"
         defaultValue={statusConfig.map((_, i) => `item-${i}`)}
         type="multiple"
       >
@@ -232,41 +252,54 @@ export default function IssuesTable({
               key={status.value}
               value={`item-${index}`}
             >
-              <div className="flex h-9 items-center justify-between border-border border-b bg-muted/60 px-4">
-                <AccordionTrigger className="h-full flex-row-reverse gap-2 py-0 hover:no-underline [&>svg]:size-3.5 [&>svg]:text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    {status.icon}
-                    <span className="font-medium text-sm">{status.label}</span>
-                    <span className="text-muted-foreground text-xs tabular-nums">
+              <div className="group flex items-stretch border-border/60 border-b bg-muted/20 transition-colors hover:bg-muted/40">
+                <div className="flex w-12 shrink-0 items-center justify-center border-border/40 border-r">
+                  {status.icon}
+                </div>
+
+                <AccordionTrigger className="flex flex-1 items-center justify-between px-4 py-2 hover:no-underline [&[data-state=open]>svg]:rotate-180">
+                  <div className="flex items-baseline gap-3">
+                    <span className="font-serif tracking-tight">
+                      {status.label}
+                    </span>
+                    <span className="rounded-full bg-foreground/10 px-2 py-0.5 font-bold font-mono text-[10px] text-foreground">
                       {statusTasks.length}
                     </span>
                   </div>
                 </AccordionTrigger>
-                <button
-                  className="flex size-6 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                  onClick={() => {
-                    setSelectedStatus(status.value);
-                    setDialogOpen(true);
-                  }}
-                  title={`Add ${status.label} issue`}
-                  type="button"
-                >
-                  <Plus size={13} />
-                </button>
+
+                <div className="flex items-center border-border/40 border-l px-3">
+                  <Button
+                    className="size-6"
+                    onClick={() => {
+                      setSelectedStatus(status.value);
+                      setDialogOpen(true);
+                    }}
+                    size="icon"
+                    variant="outline"
+                  >
+                    <Plus
+                      className="relative z-10 transition-transform group-hover/btn:rotate-90"
+                      size={8}
+                    />
+                  </Button>
+                </div>
               </div>
 
-              <AccordionContent className="pb-0">
-                {statusTasks.length === 0 ? (
-                  <EmptyState label={status.label} />
-                ) : (
-                  statusTasks.map((task) => (
-                    <TaskRow
-                      key={task.id}
-                      onDeleteRequest={setTaskToDelete}
-                      task={task}
-                    />
-                  ))
-                )}
+              <AccordionContent className="pt-0 pb-0">
+                <div className="flex flex-col">
+                  {statusTasks.length === 0 ? (
+                    <EmptyState label={status.label} />
+                  ) : (
+                    statusTasks.map((task) => (
+                      <TaskRow
+                        key={task.id}
+                        onDeleteRequest={setTaskToDelete}
+                        task={task}
+                      />
+                    ))
+                  )}
+                </div>
               </AccordionContent>
             </AccordionItem>
           );
@@ -293,19 +326,27 @@ export default function IssuesTable({
         }}
         open={!!taskToDelete}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-none border-2 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete issue?</AlertDialogTitle>
-            <AlertDialogDescription>
-              <span className="font-medium text-foreground">
+            <AlertDialogTitle className="font-serif text-2xl">
+              Delete issue?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="font-mono text-sm leading-relaxed">
+              <span className="bg-muted px-1 py-0.5 font-bold text-foreground">
                 {taskToDelete?.name}
               </span>{" "}
               will be permanently deleted. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogFooter className="mt-6 gap-3 sm:gap-0">
+            <AlertDialogCancel
+              className="rounded-none font-mono text-xs uppercase tracking-wider"
+              disabled={isDeleting}
+            >
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
+              className="rounded-none font-mono text-xs uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
               disabled={isDeleting}
               onClick={() => {
                 if (taskToDelete) {

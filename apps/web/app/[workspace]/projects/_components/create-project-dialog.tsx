@@ -2,11 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ChevronRight, User, Users } from "lucide-react";
+import { ChevronRight, Users } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { AssignUserPopover } from "@/components/assign-user-popover";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -54,6 +55,7 @@ const schema = z.object({
     "cancelled",
   ]),
   priority: z.number().min(0).max(4),
+  leadId: z.string().nullable().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -65,6 +67,7 @@ export function CreateProjectDialog({
 }: CreateProjectDialogProps) {
   const [startDate, setStartDate] = useState<Date>();
   const [targetDate, setTargetDate] = useState<Date>();
+  const [leadId, setLeadId] = useState<string | undefined>(undefined);
 
   const queryClient = useQueryClient();
 
@@ -75,6 +78,7 @@ export function CreateProjectDialog({
       description: "",
       status: "backlog",
       priority: 0,
+      leadId: undefined,
     },
     mode: "onChange",
   });
@@ -104,7 +108,16 @@ export function CreateProjectDialog({
       description: data.description?.trim() || undefined,
       status: data.status,
       priority: data.priority,
+      leadId: leadId ?? undefined,
+      startDate: startDate ?? undefined,
+      endDate: targetDate ?? undefined,
+      workspaceId: workspace.id,
     });
+  }
+
+  function handleLeadChange(userId: string | null) {
+    setLeadId(userId ?? undefined);
+    form.setValue("leadId", userId ?? undefined);
   }
 
   return (
@@ -154,15 +167,11 @@ export function CreateProjectDialog({
               <div className="flex gap-2">
                 <StatusPriority form={form.control} />
                 <div className="flex gap-2">
-                  <Button
-                    className="gap-1.5"
-                    size="sm"
-                    type="button"
-                    variant="outline"
-                  >
-                    <User className="size-3.5" />
-                    Lead
-                  </Button>
+                  <AssignUserPopover
+                    currentAssigneeId={leadId}
+                    onAssign={handleLeadChange}
+                    workspaceId={workspace.id}
+                  />
                   <Button
                     className="gap-1.5"
                     size="sm"

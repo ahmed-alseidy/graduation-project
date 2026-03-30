@@ -78,6 +78,13 @@
       "when": 1773006752304,
       "tag": "0010_large_madripoor",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1773259432930,
+      "tag": "0011_overrated_callisto",
+      "breakpoints": true
     }
   ]
 }

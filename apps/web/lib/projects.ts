@@ -37,6 +37,10 @@ export type CreateProjectData = {
   description?: string;
   status: ProjectStatus;
   priority: number;
+  startDate?: Date;
+  endDate?: Date;
+  leadId?: string;
+  workspaceId: string;
 };
 
 export const createProject = async (
