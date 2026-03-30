@@ -53,7 +53,8 @@ const blueprintUi = IBM_Plex_Sans({
 const schema = z.object({
   description: z
     .string()
-    .min(30, "Please provide at least 30 characters describing your idea"),
+    .min(30, "Please provide at least 30 characters describing your idea")
+    .max(5000, "Please provide at most 5000 characters describing your idea"),
 });
 
 type FormValues = z.infer<typeof schema>;
