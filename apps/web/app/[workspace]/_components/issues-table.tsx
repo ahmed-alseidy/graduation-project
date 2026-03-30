@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import {
   Accordion,
@@ -37,12 +37,7 @@ import {
 } from "@/lib/projects";
 import { findWorkspaceBySlug } from "@/lib/workspace";
 import { CreateTaskDialog } from "../projects/_components/create-task-dialog";
-import {
-  formatDueDate,
-  getUsernameInitials,
-  priorityConfig,
-  statusConfig,
-} from "./issue-config";
+import { formatDueDate, priorityConfig, statusConfig } from "./issue-config";
 
 function TaskRow({
   task,
@@ -54,25 +49,15 @@ function TaskRow({
   const router = useRouter();
   const params = useParams();
   const workspaceId = params.workspace as string;
-  const projectId = params.project as string;
 
-  const [usernameInitials, setUsernameInitials] = useState<string | null>(null);
-
-  const status = statusConfig.find((s) => s.value === task.status);
   const priority =
     priorityConfig.find((p) => p.value === task.priority) ?? priorityConfig[0];
   const dueDate = task.dueDate ? formatDueDate(task.dueDate) : null;
   const taskShortId = task.id.slice(0, 8).toUpperCase();
 
   const handleNavigate = () => {
-    router.push(`/${workspaceId}/projects/${projectId}/issues/${task.id}`);
+    router.push(`/${workspaceId}/projects/${task.projectId}/issues/${task.id}`);
   };
-
-  useEffect(() => {
-    getUsernameInitials(task.assigneeId).then((initials) => {
-      setUsernameInitials(initials);
-    });
-  }, [task.assigneeId]);
 
   return (
     <div className="group hover:-translate-y-[2px] relative flex items-stretch border-border/40 border-b bg-background transition-all duration-300 hover:z-10 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.05)]">
@@ -129,20 +114,14 @@ function TaskRow({
                 <MoreHorizontal size={14} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="w-48 rounded-none border-2 p-0 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]"
-            >
-              <DropdownMenuItem
-                className="cursor-pointer rounded-none px-4 py-3 font-mono text-xs uppercase tracking-wider focus:bg-primary focus:text-primary-foreground"
-                onClick={handleNavigate}
-              >
+            <DropdownMenuContent align="end" className="">
+              <DropdownMenuItem onClick={handleNavigate}>
                 Open issue
               </DropdownMenuItem>
               <DropdownMenuSeparator className="m-0" />
               <DropdownMenuItem
-                className="cursor-pointer rounded-none px-4 py-3 font-mono text-destructive text-xs uppercase tracking-wider focus:bg-destructive focus:text-destructive-foreground"
                 onClick={() => onDeleteRequest(task)}
+                variant="destructive"
               >
                 <Trash2 className="mr-2" size={14} />
                 Delete
@@ -169,9 +148,9 @@ function EmptyState({ label }: { label: string }) {
 }
 
 export default function IssuesTable({
-  projectTaskData,
+  projectTasksData: projectTaskData,
 }: {
-  projectTaskData: ProjectTask[] | undefined;
+  projectTasksData: ProjectTask[] | undefined;
 }) {
   const [selectedStatus, setSelectedStatus] = useState<
     ProjectStatus | undefined
@@ -326,27 +305,21 @@ export default function IssuesTable({
         }}
         open={!!taskToDelete}
       >
-        <AlertDialogContent className="rounded-none border-2 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)]">
+        <AlertDialogContent className="">
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-serif text-2xl">
+            <AlertDialogTitle className="font-serif">
               Delete issue?
             </AlertDialogTitle>
-            <AlertDialogDescription className="font-mono text-sm leading-relaxed">
+            <AlertDialogDescription className="">
               <span className="bg-muted px-1 py-0.5 font-bold text-foreground">
                 {taskToDelete?.name}
-              </span>{" "}
+              </span>
               will be permanently deleted. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="mt-6 gap-3 sm:gap-0">
-            <AlertDialogCancel
-              className="rounded-none font-mono text-xs uppercase tracking-wider"
-              disabled={isDeleting}
-            >
-              Cancel
-            </AlertDialogCancel>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className="rounded-none font-mono text-xs uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
               disabled={isDeleting}
               onClick={() => {
                 if (taskToDelete) {

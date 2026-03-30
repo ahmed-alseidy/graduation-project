@@ -194,7 +194,7 @@ export default function TaskPage() {
   }
 
   return (
-    <div className="px-8 py-10">
+    <div className="px-6 py-6 md:px-8 md:py-10">
       <Textarea
         className="min-h-12 resize-none border-none bg-background! p-0 font-bold text-2xl! shadow-none focus-visible:ring-0 md:text-3xl"
         onChange={(e) => setTaskName(e.target.value)}

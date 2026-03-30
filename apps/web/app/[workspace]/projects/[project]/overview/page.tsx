@@ -233,14 +233,10 @@ export default function ProjectOverview() {
 
   return (
     <div className="min-h-full bg-background">
-      <div className="px-6 py-8 md:px-8 md:py-10">
-        <p className="text-muted-foreground text-xs leading-none tracking-wide">
-          Overview
-        </p>
-
+      <div className="px-6 py-6 md:px-8 md:py-10">
         <Textarea
           className={cn(
-            "mt-3 min-h-12 w-full resize-none border-none bg-transparent! p-0 font-semibold text-2xl! leading-tight shadow-none! ring-0! transition-colors",
+            "w-full resize-none border-none bg-transparent! p-0 font-semibold text-lg! leading-tight shadow-none! ring-0! transition-colors",
             "placeholder:text-muted-foreground/50 focus-visible:ring-0",
             "md:text-3xl! md:leading-tight",
             "[font-family:var(--font-geist-sans),system-ui,sans-serif]"
@@ -251,7 +247,7 @@ export default function ProjectOverview() {
           value={projectName}
         />
 
-        <section aria-label="Project properties" className="mt-2">
+        <section aria-label="Project properties">
           <PropertyRow label="Status">
             <StatusPriority
               selectedPriority={selectedPriority}
@@ -283,7 +279,7 @@ export default function ProjectOverview() {
         {projectData ? (
           <section
             aria-label="Description"
-            className="mt-10 border-border/80 border-t pt-8"
+            className="mt-4 border-border/80 border-t pt-8"
           >
             <Accordion collapsible defaultValue="description" type="single">
               <AccordionItem value="description">

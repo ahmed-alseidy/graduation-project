@@ -44,24 +44,13 @@ import {
 } from "@/lib/projects";
 import { findWorkspaceBySlug } from "@/lib/workspace";
 import { CreateTaskDialog } from "../projects/_components/create-task-dialog";
-import {
-  formatDueDate,
-  getUsernameInitials,
-  priorityConfig,
-  statusConfig,
-} from "./issue-config";
+import { formatDueDate, priorityConfig, statusConfig } from "./issue-config";
 
 function KanbanCardContent({ task }: { task: ProjectTask }) {
-  const [usernameInitials, setUsernameInitials] = useState<string | null>(null);
-
   const priority =
     priorityConfig.find((p) => p.value === task.priority) ?? priorityConfig[0];
   const dueDate = task.dueDate ? formatDueDate(task.dueDate) : null;
   const taskShortId = task.id.slice(0, 8).toUpperCase();
-
-  useEffect(() => {
-    getUsernameInitials(task.assigneeId).then(setUsernameInitials);
-  }, [task.assigneeId]);
 
   return (
     <>
@@ -88,15 +77,15 @@ function KanbanCardContent({ task }: { task: ProjectTask }) {
         )}
         {task.assigneeName ? (
           <div
-            className="flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-white"
-            title={task.assigneeId}
+            className="flex size-6 items-center justify-center rounded border border-primary/20 bg-primary/10 text-primary"
+            title={task.assigneeName}
           >
-            <span className="font-semibold text-[10px] leading-none">
+            <span className="font-bold font-mono text-[10px] leading-none">
               {task.assigneeName?.slice(0, 2).toUpperCase() ?? "?"}
             </span>
           </div>
         ) : (
-          <div className="size-5 shrink-0 rounded-sm border border-border border-dashed" />
+          <div className="size-6 rounded border border-border/50 border-dashed bg-muted/30" />
         )}
       </div>
     </>
@@ -113,7 +102,6 @@ function KanbanCard({
   const router = useRouter();
   const params = useParams();
   const workspaceId = params.workspace as string;
-  const projectId = params.project as string;
 
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id: task.id, data: { task } });
@@ -123,7 +111,7 @@ function KanbanCard({
     : undefined;
 
   const handleNavigate = () => {
-    router.push(`/${workspaceId}/projects/${projectId}/issues/${task.id}`);
+    router.push(`/${workspaceId}/projects/${task.projectId}/issues/${task.id}`);
   };
 
   return (

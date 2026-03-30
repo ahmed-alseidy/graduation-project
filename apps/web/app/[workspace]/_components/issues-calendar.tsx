@@ -34,7 +34,6 @@ function TaskChip({ task }: { task: ProjectTask }) {
   const router = useRouter();
   const params = useParams();
   const workspaceId = params.workspace as string;
-  const projectId = params.project as string;
 
   const priority =
     priorityConfig.find((p) => p.value === task.priority) ?? priorityConfig[0];
@@ -42,7 +41,7 @@ function TaskChip({ task }: { task: ProjectTask }) {
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    router.push(`/${workspaceId}/projects/${projectId}/issues/${task.id}`);
+    router.push(`/${workspaceId}/projects/${task.projectId}/issues/${task.id}`);
   };
 
   return (

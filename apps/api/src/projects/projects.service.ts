@@ -150,6 +150,7 @@ export class ProjectsService {
           id: tasks.id,
           name: tasks.name,
           description: tasks.description,
+          projectId: tasks.projectId,
           assigneeId: tasks.assigneeId,
           assigneeName: users.name,
           assigneeEmail: users.email,

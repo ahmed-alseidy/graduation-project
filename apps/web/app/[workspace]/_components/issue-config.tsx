@@ -12,8 +12,6 @@ import {
   Ellipsis as NoPriorityIcon,
   OctagonAlert as UrgentPriorityIcon,
 } from "lucide-react";
-import { attempt } from "@/lib/error-handling";
-import { getUser } from "@/lib/user";
 
 export const statusConfig = [
   {
@@ -79,15 +77,4 @@ export function formatDueDate(date?: Date): string | null {
   }
   const d = new Date(date);
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
-
-export async function getUsernameInitials(id?: string): Promise<string> {
-  if (!id) {
-    return "?";
-  }
-  const [result, error] = await attempt(getUser(id));
-  if (error || !result) {
-    return "?";
-  }
-  return result.data.user.name?.slice(0, 2).toUpperCase() ?? "?";
 }

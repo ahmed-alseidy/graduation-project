@@ -47,6 +47,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { attempt } from "@/lib/error-handling";
 import { deleteProject, listProjects, type Project } from "@/lib/projects";
+import { cn } from "@/lib/utils";
 import {
   findWorkspaceBySlug,
   getWorkspaceMembers,
@@ -128,16 +129,21 @@ function StatCard({
   icon: Icon,
   active,
   onClick,
+  className,
 }: {
   label: string;
   count: number;
   icon: React.ElementType;
   active?: boolean;
   onClick?: () => void;
+  className?: string;
 }) {
   return (
     <button
-      className={`group flex flex-col gap-3 border p-4 text-left transition-colors hover:bg-accent ${active ? "border-primary bg-accent/40" : "border-border bg-card"}`}
+      className={cn(
+        `group flex flex-col gap-3 border p-4 text-left transition-colors hover:bg-accent ${active ? "border-primary bg-accent/40" : "border-border bg-card"}`,
+        className
+      )}
       onClick={onClick}
       type="button"
     >
@@ -442,6 +448,7 @@ export default function ProjectsPage() {
             />
             <StatCard
               active={statusFilter === "backlog"}
+              className="border-x-0"
               count={counts.backlog}
               icon={CircleDashed}
               label="Backlog"
@@ -456,6 +463,7 @@ export default function ProjectsPage() {
             />
             <StatCard
               active={statusFilter === "in_progress"}
+              className="border-x-0"
               count={counts.in_progress}
               icon={Clock}
               label="In Progress"
@@ -470,6 +478,7 @@ export default function ProjectsPage() {
             />
             <StatCard
               active={statusFilter === "cancelled"}
+              className="border-l-0"
               count={counts.cancelled}
               icon={CircleOff}
               label="Cancelled"

@@ -102,7 +102,7 @@ export default function ProjectIssues() {
         </Button>
       </div>
 
-      {view === "list" && <IssuesTable projectTaskData={projectTaskData} />}
+      {view === "list" && <IssuesTable projectTasksData={projectTaskData} />}
       {view === "board" && <IssuesKanban projectTaskData={projectTaskData} />}
       {view === "calendar" && (
         <IssuesCalendar projectTaskData={projectTaskData} />
