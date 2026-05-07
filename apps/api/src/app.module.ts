@@ -3,8 +3,11 @@ import { AuthModule } from "@thallesp/nestjs-better-auth";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { BlueprintModule } from "./blueprint/blueprint.module";
+import { CommentsModule } from "./comments/comments.module";
 import { CyclesModule } from "./cycles/cycles.module";
+import { InboxModule } from "./inbox/inbox.module";
 import { auth } from "./lib/auth";
+import { NotificationsModule } from "./notifications/notifications.module";
 import { ProjectsModule } from "./projects/projects.module";
 import { UsersModule } from "./users/users.module";
 import { WorkspacesModule } from "./workspaces/workspaces.module";
@@ -19,6 +22,9 @@ import { WorkspacesModule } from "./workspaces/workspaces.module";
     BlueprintModule,
     UsersModule,
     CyclesModule,
+    NotificationsModule,
+    InboxModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

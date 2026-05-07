@@ -10,6 +10,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema/auth-schema";
 import { projects, tasks } from "@/db/schema/project";
 import { attempt } from "@/lib/error-handling";
+import { NotificationsService } from "@/notifications/notifications.service";
 import { CreateProjectDto } from "./dto/create-project.dto";
 import { CreateTaskDto, TaskStatus } from "./dto/create-task.dto";
 import { UpdateProjectDto } from "./dto/update-project.dto";
@@ -17,7 +18,17 @@ import { UpdateTaskDto } from "./dto/update-task.dto";
 
 @Injectable()
 export class ProjectsService {
-  async createProject(body: CreateProjectDto, workspaceId: string) {
+  private readonly notificationsService: NotificationsService;
+
+  constructor(notificationsService: NotificationsService) {
+    this.notificationsService = notificationsService;
+  }
+
+  async createProject(
+    body: CreateProjectDto,
+    workspaceId: string,
+    actorId?: string
+  ) {
     const [project, error] = await attempt(
       db
         .insert(projects)
@@ -31,11 +42,27 @@ export class ProjectsService {
           endDate: body.endDate ? new Date(body.endDate) : undefined,
           leadId: body.leadId,
         })
-        .returning({ id: projects.id })
+        .returning({
+          id: projects.id,
+          name: projects.name,
+          workspaceId: projects.workspaceId,
+          leadId: projects.leadId,
+        })
     );
     if (error) {
       throw new InternalServerErrorException("Failed to create project");
     }
+
+    const createdProject = project?.[0];
+    if (createdProject) {
+      await this.notificationsService.notifyProjectLeadChange(
+        null,
+        createdProject.leadId,
+        createdProject,
+        actorId
+      );
+    }
+
     return ok({ projectId: project?.[0]?.id });
   }
 
@@ -78,7 +105,21 @@ export class ProjectsService {
     return ok({ projectId: project?.[0]?.id });
   }
 
-  async updateProject(projectId: string, body: UpdateProjectDto) {
+  async updateProject(
+    projectId: string,
+    body: UpdateProjectDto,
+    actorId?: string
+  ) {
+    const [previousProject, previousProjectError] = await attempt(
+      db.select().from(projects).where(eq(projects.id, projectId)).limit(1)
+    );
+    if (previousProjectError) {
+      throw new InternalServerErrorException("Failed to get project");
+    }
+    if (!previousProject?.[0]) {
+      throw new NotFoundException("Project not found");
+    }
+
     const [project, projectError] = await attempt(
       db
         .update(projects)
@@ -92,7 +133,12 @@ export class ProjectsService {
           leadId: body.leadId,
         })
         .where(eq(projects.id, projectId))
-        .returning({ id: projects.id })
+        .returning({
+          id: projects.id,
+          name: projects.name,
+          workspaceId: projects.workspaceId,
+          leadId: projects.leadId,
+        })
     );
     if (projectError) {
       throw new InternalServerErrorException("Failed to update project");
@@ -101,13 +147,21 @@ export class ProjectsService {
       throw new NotFoundException("Project not found");
     }
 
+    await this.notificationsService.notifyProjectLeadChange(
+      previousProject[0].leadId,
+      project[0].leadId,
+      project[0],
+      actorId
+    );
+
     return ok({ projectId: project?.[0]?.id });
   }
 
   async createTask(
     workspaceId: string,
     projectId: string,
-    body: CreateTaskDto
+    body: CreateTaskDto,
+    actorId?: string
   ) {
     let dueDate: Date | undefined;
     if (body.dueDate) {
@@ -136,11 +190,20 @@ export class ProjectsService {
           dueDate: body.dueDate ? new Date(body.dueDate) : undefined,
           cycleId: body.cycleId ?? undefined,
         })
-        .returning({ id: tasks.id })
+        .returning()
     );
     if (taskError) {
       throw new InternalServerErrorException("Failed to create task");
     }
+
+    if (task?.[0]) {
+      await this.notificationsService.notifyTaskCreated(task[0], {
+        actorId,
+        projectLeadId: project[0].leadId,
+        projectName: project[0].name,
+      });
+    }
+
     return ok({ taskId: task?.[0]?.id });
   }
 
@@ -187,13 +250,37 @@ export class ProjectsService {
     return ok({ task: task?.[0] });
   }
 
-  async updateTask(taskId: string, body: UpdateTaskDto) {
+  async updateTask(taskId: string, body: UpdateTaskDto, actorId?: string) {
     let dueDate: Date | undefined;
     if (body.dueDate) {
       dueDate = new Date(body.dueDate);
       if (dueDate.getTime() < Date.now() - 1000 * 60 * 60 * 24) {
         throw new BadRequestException("Due date must be in the future");
       }
+    }
+
+    const [previousTask, previousTaskError] = await attempt(
+      db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1)
+    );
+    if (previousTaskError) {
+      throw new InternalServerErrorException("Failed to get task");
+    }
+    if (!previousTask?.[0]) {
+      throw new NotFoundException("Task not found");
+    }
+
+    const [project, projectError] = await attempt(
+      db
+        .select({
+          leadId: projects.leadId,
+          name: projects.name,
+        })
+        .from(projects)
+        .where(eq(projects.id, previousTask[0].projectId))
+        .limit(1)
+    );
+    if (projectError) {
+      throw new InternalServerErrorException("Failed to get project");
     }
 
     const [task, taskError] = await attempt(
@@ -206,10 +293,20 @@ export class ProjectsService {
           cycleId: body.cycleId === undefined ? undefined : body.cycleId,
         })
         .where(eq(tasks.id, taskId))
+        .returning()
     );
     if (taskError) {
       throw new InternalServerErrorException("Failed to update task");
     }
+    if (!task?.[0]) {
+      throw new NotFoundException("Task not found");
+    }
+
+    await this.notificationsService.notifyTaskUpdate(previousTask[0], task[0], {
+      actorId,
+      projectLeadId: project?.[0]?.leadId,
+      projectName: project?.[0]?.name,
+    });
 
     return ok({ taskId: task?.[0]?.id });
   }

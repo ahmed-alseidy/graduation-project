@@ -1,8 +1,10 @@
 import { relations, sql } from "drizzle-orm";
 import {
   check,
+  index,
   integer,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uuid,
@@ -101,23 +103,70 @@ export const taskRelations = relations(tasks, ({ one }) => ({
   }),
 }));
 
-export const taskComments = pgTable("task_comments", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  taskId: uuid("task_id")
-    .references(() => tasks.id, { onDelete: "cascade" })
-    .notNull(),
-  userId: text("user_id").references(() => users.id),
-  content: text("content").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+export const taskComments = pgTable(
+  "task_comments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    taskId: uuid("task_id")
+      .references(() => tasks.id, { onDelete: "cascade" })
+      .notNull(),
+    workspaceId: uuid("workspace_id")
+      .references(() => workspaces.id, { onDelete: "cascade" })
+      .notNull(),
+    userId: text("user_id").references(() => users.id),
+    content: text("content").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+      () => new Date()
+    ),
+  },
+  (t) => [index("task_comments_task_created_idx").on(t.taskId, t.createdAt)]
+);
 
-export const taskCommentRelations = relations(taskComments, ({ one }) => ({
-  task: one(tasks, {
-    fields: [taskComments.taskId],
-    references: [tasks.id],
-  }),
-  user: one(users, {
-    fields: [taskComments.userId],
-    references: [users.id],
-  }),
-}));
+export const taskCommentRelations = relations(
+  taskComments,
+  ({ one, many }) => ({
+    task: one(tasks, {
+      fields: [taskComments.taskId],
+      references: [tasks.id],
+    }),
+    workspace: one(workspaces, {
+      fields: [taskComments.workspaceId],
+      references: [workspaces.id],
+    }),
+    author: one(users, {
+      fields: [taskComments.userId],
+      references: [users.id],
+    }),
+    mentions: many(taskCommentMentions),
+  })
+);
+
+export const taskCommentMentions = pgTable(
+  "task_comment_mentions",
+  {
+    commentId: uuid("comment_id")
+      .references(() => taskComments.id, { onDelete: "cascade" })
+      .notNull(),
+    userId: text("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.commentId, t.userId] })]
+);
+
+export const taskCommentMentionRelations = relations(
+  taskCommentMentions,
+  ({ one }) => ({
+    comment: one(taskComments, {
+      fields: [taskCommentMentions.commentId],
+      references: [taskComments.id],
+    }),
+    user: one(users, {
+      fields: [taskCommentMentions.userId],
+      references: [users.id],
+    }),
+  })
+);
