@@ -382,14 +382,14 @@ export default function TaskPage() {
         value={description}
       />
 
-      {workspaceData?.id && (
+      {workspaceData?.id ? (
         <CommentsSection
           highlightCommentId={highlightCommentId}
           projectId={projectId}
           taskId={taskId}
           workspaceId={workspaceData.id}
         />
-      )}
+      ) : null}
     </div>
   );
 }
