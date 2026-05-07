@@ -27,6 +27,8 @@ export class WorkspacesService {
           status: tasks.status,
           dueDate: tasks.dueDate,
           priority: tasks.priority,
+          cycleId: tasks.cycleId,
+          createdAt: tasks.createdAt,
         })
         .from(tasks)
         .leftJoin(users, eq(tasks.assigneeId, users.id))
@@ -366,6 +368,8 @@ export class WorkspacesService {
           status: tasks.status,
           dueDate: tasks.dueDate,
           priority: tasks.priority,
+          cycleId: tasks.cycleId,
+          createdAt: tasks.createdAt,
         })
         .from(tasks)
         .leftJoin(users, eq(tasks.assigneeId, users.id))

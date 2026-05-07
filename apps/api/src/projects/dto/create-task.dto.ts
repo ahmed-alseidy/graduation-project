@@ -6,6 +6,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   Max,
   MaxLength,
   Min,
@@ -84,4 +85,14 @@ export class CreateTaskDto {
   @IsDateString()
   @IsOptional()
   dueDate?: string;
+
+  @ApiProperty({
+    description: "The cycle assigned to the task",
+    example: "123e4567-e89b-12d3-a456-426614174000",
+    required: false,
+    nullable: true,
+  })
+  @IsUUID()
+  @IsOptional()
+  cycleId?: string | null;
 }

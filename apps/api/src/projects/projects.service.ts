@@ -134,6 +134,7 @@ export class ProjectsService {
           workspaceId,
           projectId,
           dueDate: body.dueDate ? new Date(body.dueDate) : undefined,
+          cycleId: body.cycleId ?? undefined,
         })
         .returning({ id: tasks.id })
     );
@@ -157,6 +158,7 @@ export class ProjectsService {
           status: tasks.status,
           dueDate: tasks.dueDate,
           priority: tasks.priority,
+          cycleId: tasks.cycleId,
           createdAt: tasks.createdAt,
         })
         .from(tasks)
@@ -201,6 +203,7 @@ export class ProjectsService {
           ...body,
           dueDate,
           status: body.status as TaskStatus,
+          cycleId: body.cycleId === undefined ? undefined : body.cycleId,
         })
         .where(eq(tasks.id, taskId))
     );
