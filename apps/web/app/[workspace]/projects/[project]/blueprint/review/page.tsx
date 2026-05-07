@@ -72,7 +72,7 @@ export default function BlueprintReviewPage() {
         </div>
         <Button
           onClick={() =>
-            router.push(`/${workspaceId}/projects/${projectId}/blueprint`)
+            router.push(`/${workspaceSlug}/projects/${projectId}/blueprint`)
           }
           size="sm"
         >
