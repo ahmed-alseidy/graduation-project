@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 // Icon color mapping for different menu items
 const iconColors: Record<string, string> = {
   Inbox: "text-blue-500 dark:text-blue-400",
+  Chat: "text-teal-500 dark:text-teal-400",
   "My issues": "text-purple-500 dark:text-purple-400",
   "Create workspace": "text-green-500 dark:text-green-400",
   Projects: "text-orange-500 dark:text-orange-400",

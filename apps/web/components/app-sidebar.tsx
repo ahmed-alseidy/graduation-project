@@ -5,6 +5,7 @@ import {
   Briefcase,
   Clock,
   Inbox,
+  MessageSquareText,
   Plus,
   Square,
   TrendingUp,
@@ -32,6 +33,11 @@ function getData(slug: string, inboxUnreadCount?: number) {
         url: `/${encodeURIComponent(slug)}/inbox`,
         icon: Inbox,
         badge: inboxUnreadCount || undefined,
+      },
+      {
+        title: "Chat",
+        url: `/${encodeURIComponent(slug)}/chat`,
+        icon: MessageSquareText,
       },
       {
         title: "My issues",
