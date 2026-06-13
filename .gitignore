@@ -38,3 +38,7 @@ yarn-error.log*
 *.pem
 
 nginx/certs
+.kilo
+*.pdf
+logo.gif
+*.typ
