@@ -37,7 +37,4 @@ yarn-error.log*
 .DS_Store
 *.pem
 
-*.pdf
-.kilo
-*.typ
-logo.gif
+nginx/certs
